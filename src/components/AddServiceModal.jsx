@@ -79,8 +79,8 @@ export function AddServiceModal({ isOpen, onClose, onAddService }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-[#161224] border border-[#251f38] rounded-2xl w-full max-w-lg p-6 shadow-2xl relative font-sans text-[#e6e2f0]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-[#161224] border border-[#251f38] rounded-2xl w-full max-w-lg p-5 sm:p-6 shadow-2xl relative font-sans text-[#e6e2f0] max-h-[90vh] overflow-y-auto">
         
         {/* Header Vanguard */}
         <div className="flex items-center justify-between pb-4 border-b border-[#251f38]">

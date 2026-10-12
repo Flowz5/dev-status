@@ -175,7 +175,7 @@ export default function App() {
       )}
 
       {/* Container Principal : Sidebar Gauche + Dashboard Central */}
-      <main className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 max-w-[1700px] w-full mx-auto p-3 sm:p-6 lg:p-8">
         
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           
@@ -189,11 +189,11 @@ export default function App() {
           />
 
           {/* B. Corps Principal du Dashboard */}
-          <div className="flex-1 w-full space-y-6">
+          <div className="flex-1 w-full space-y-6 min-w-0">
             
             {displayedServices.length === 0 ? (
               /* État Vierge pour tout nouvel utilisateur */
-              <div className="bg-[#161224] border border-[#251f38] rounded-3xl p-8 sm:p-14 text-center shadow-2xl space-y-6">
+              <div className="bg-[#161224] border border-[#251f38] rounded-3xl p-6 sm:p-14 text-center shadow-2xl space-y-6">
                 <div className="w-16 h-16 rounded-2xl bg-[#231b38] border border-[#372b54] p-3 mx-auto flex items-center justify-center text-[#f97356] shadow-lg shadow-[#f97356]/10">
                   <Plus className="w-8 h-8" />
                 </div>
@@ -249,23 +249,23 @@ export default function App() {
                 </div>
 
                 {/* Section Détaillée : Les cartes des projets avec les barres de 30 vérifications */}
-                <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#251f38]">
+                <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#251f38]">
                     <div>
-                      <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
+                      <h3 className="text-xs sm:text-sm font-bold font-mono uppercase text-white tracking-wider">
                         {selectedService 
                           ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` 
                           : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)"
                         }
                       </h3>
-                      <p className="text-xs text-[#7e7592] font-mono mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-[#7e7592] font-mono mt-0.5">
                         Pastilles de statut, temps de réponse en millisecondes et date du dernier contrôle
                       </p>
                     </div>
 
                     <button
                       onClick={() => setIsAddModalOpen(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+                      className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Nouvelle URL</span>

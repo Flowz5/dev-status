@@ -2,63 +2,246 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // =========================================================================
+    // FONCTIONS D'AUTHENTIFICATION ET DE GESTION DES RÔLES
+    // =========================================================================
+
+    // Vérifie si l'utilisateur est authentifié auprès de Firebase Auth
     function isAuthenticated() {
       return request.auth != null;
     }
 
+    // Vérifie si l'utilisateur est l'administrateur désigné du projet
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.email == "le.dupont.pro@gmail.com";
+      return isAuthenticated() &&
+        request.auth.token.email == "le.dupont.pro@gmail.com";
     }
 
-    function isOwner(resourceData) {
+    // Vérifie si l'utilisateur connecté est le propriétaire du document
+    // (par son email de compte ou son UID Firebase)
+    function isOwner(data) {
       return isAuthenticated() && (
-        resourceData.ownerEmail == request.auth.token.email ||
-        resourceData.userId == request.auth.uid
+        data.get('ownerEmail', '') == request.auth.token.email ||
+        data.get('userId', '') == request.auth.uid
       );
     }
 
-    // Collection des services surveillés (cloisonnée par compte)
+    // Vérifie si une valeur est de type numérique (int ou float)
+    function isNumeric(val) {
+      return val is int || val is float;
+    }
+
+    // Vérifie l'existence et l'appartenance du service parent
+    function parentServiceExists(serviceId) {
+      return exists(/databases/$(database)/documents/services/$(serviceId));
+    }
+
+    function isParentServiceOwner(serviceId) {
+      return parentServiceExists(serviceId) &&
+        isOwner(get(/databases/$(database)/documents/services/$(serviceId)).data);
+    }
+
+    // =========================================================================
+    // VALIDATEURS DE DONNÉES & PROTECTION ANTI-ÉPUISEMENT (DoS / LIMITES)
+    // =========================================================================
+
+    // Validation stricte du schéma d'un service surveillé
+    function isValidService(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+             data.url is string && data.url.size() > 0 && data.url.size() <= 2000 &&
+             data.ownerEmail is string && data.ownerEmail.size() > 0 && data.ownerEmail.size() <= 254 &&
+             (!('id' in data) || (data.id is string && data.id.size() <= 100)) &&
+             (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 60)) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('active' in data) || data.active is bool) &&
+             (!('status' in data) || (data.status is string && (data.status in ['operational', 'degraded', 'down']))) &&
+             (!('statusCode' in data) || isNumeric(data.statusCode)) &&
+             (!('responseTime' in data) || (isNumeric(data.responseTime) && data.responseTime >= 0)) &&
+             (!('degradedThresholdMs' in data) || (isNumeric(data.degradedThresholdMs) && data.degradedThresholdMs >= 0)) &&
+             (!('uptimePercentage' in data) || (isNumeric(data.uptimePercentage) && data.uptimePercentage >= 0 && data.uptimePercentage <= 100)) &&
+             (!('lastCheck' in data) || (data.lastCheck is string && data.lastCheck.size() <= 60)) &&
+             (!('lastError' in data) || data.lastError == null || (data.lastError is string && data.lastError.size() <= 2000)) &&
+             (!('history' in data) || (data.history is list && data.history.size() <= 100)) &&
+             (!('tags' in data) || (data.tags is list && data.tags.size() <= 30));
+    }
+
+    // Immutabilité des champs d'identité et de propriété lors des mises à jour
+    function serviceImmutableFieldsUnchanged() {
+      return request.resource.data.ownerEmail == resource.data.ownerEmail &&
+             (!('userId' in resource.data) || request.resource.data.get('userId', '') == resource.data.userId) &&
+             (!('id' in resource.data) || request.resource.data.get('id', '') == resource.data.id);
+    }
+
+    // Validation des pings
+    function isValidPing(data) {
+      return isNumeric(data.statusCode) &&
+             isNumeric(data.responseTime) && data.responseTime >= 0 &&
+             data.status is string && (data.status in ['operational', 'degraded', 'down']) &&
+             (!('serviceId' in data) || (data.serviceId is string && data.serviceId.size() <= 100)) &&
+             (!('timestamp' in data) || (data.timestamp is string && data.timestamp.size() <= 60) || data.timestamp is timestamp) &&
+             (!('error' in data) || data.error == null || (data.error is string && data.error.size() <= 1000));
+    }
+
+    // Validation des logs d'audit
+    function isValidLog(data) {
+      return (!('action' in data) || (data.action is string && data.action.size() <= 200)) &&
+             (!('message' in data) || (data.message is string && data.message.size() <= 1000)) &&
+             (!('level' in data) || (data.level is string && data.level.size() <= 50)) &&
+             (!('serviceId' in data) || (data.serviceId is string && data.serviceId.size() <= 100)) &&
+             (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
+             (!('ownerEmail' in data) || (data.ownerEmail is string && data.ownerEmail.size() <= 254)) &&
+             (!('details' in data) || data.details is map);
+    }
+
+    // Validation des profils utilisateurs
+    function isValidUser(data) {
+      return (!('email' in data) || (data.email is string && data.email.size() <= 254)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 2000)) &&
+             (!('role' in data) || (data.role is string && data.role.size() <= 30)) &&
+             (!('createdAt' in data) || (data.createdAt is string || data.createdAt is timestamp)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string || data.updatedAt is timestamp)) &&
+             (!('settings' in data) || data.settings is map);
+    }
+
+    function userRoleProtectedOnCreate() {
+      return !('role' in request.resource.data) ||
+             request.resource.data.role != 'admin' ||
+             isAdmin();
+    }
+
+    function userRoleProtectedOnUpdate() {
+      return !('role' in request.resource.data) ||
+             request.resource.data.role == resource.data.get('role', 'user') ||
+             isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: /services/{serviceId}
+    // =========================================================================
     match /services/{serviceId} {
-      // Lecture strictement réservée à l'administrateur ou au propriétaire
+      // Lecture : réservée à l'administrateur ou au propriétaire
       allow read: if isAdmin() || isOwner(resource.data);
 
-      // Création : l'utilisateur authentifié devient le propriétaire (ou l'administrateur)
-      allow create: if isAdmin() || (
-        isAuthenticated() && (
-          request.resource.data.ownerEmail == request.auth.token.email ||
-          request.resource.data.userId == request.auth.uid
+      // Création : utilisateur authentifié devenant propriétaire, ou administrateur
+      allow create: if (
+        isAdmin() || (
+          isAuthenticated() &&
+          request.resource.data.ownerEmail == request.auth.token.email &&
+          (!('userId' in request.resource.data) || request.resource.data.userId == request.auth.uid)
         )
-      );
+      ) && isValidService(request.resource.data);
 
-      // Modification : Administrateur OU propriétaire du service
-      // (Permet également les mises à jour des pings et métriques automatisées)
-      allow update: if isAdmin() || isOwner(resource.data) || (
-        // Permet l'enregistrement des pings périodiques
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['statusCode', 'status', 'responseTime', 'lastCheck', 'history', 'uptimePercentage', 'lastError'])
-      );
+      // Modification : réservée à l'administrateur OU au propriétaire
+      // (suppression de la faille affectant affectedKeys() sans authentification)
+      allow update: if (
+        isAdmin() || (
+          isOwner(resource.data) &&
+          serviceImmutableFieldsUnchanged()
+        )
+      ) && isValidService(request.resource.data);
 
-      // Suppression : Administrateur OU propriétaire uniquement
+      // Suppression : réservée à l'administrateur ou au propriétaire
       allow delete: if isAdmin() || isOwner(resource.data);
 
-      // Sous-collection des pings
+      // -----------------------------------------------------------------------
+      // SOUS-COLLECTION: /services/{serviceId}/pings/{pingId}
+      // -----------------------------------------------------------------------
       match /pings/{pingId} {
-        allow read: if true;
-        allow write: if true;
+        // Lecture : admin ou propriétaire du service parent
+        allow read: if isAdmin() || isParentServiceOwner(serviceId);
+
+        // Écriture : admin ou propriétaire du service parent, avec validation des données
+        allow create: if (isAdmin() || isParentServiceOwner(serviceId)) &&
+                         isValidPing(request.resource.data);
+
+        allow update: if (isAdmin() || isParentServiceOwner(serviceId)) &&
+                         isValidPing(request.resource.data);
+
+        // Suppression : admin ou propriétaire du service parent
+        allow delete: if isAdmin() || isParentServiceOwner(serviceId);
       }
     }
 
-    // Logs d'activité
-    match /logs/{logId} {
-      allow read: if true;
-      allow write: if true;
+    // =========================================================================
+    // COLLECTION: /pings/{pingId} (accès direct au premier niveau)
+    // =========================================================================
+    match /pings/{pingId} {
+      allow read: if isAdmin() || isOwner(resource.data) || (
+        resource.data.get('serviceId', '') != '' &&
+        isParentServiceOwner(resource.data.serviceId)
+      );
+
+      allow create: if (
+        isAdmin() || (
+          isAuthenticated() && (
+            isOwner(request.resource.data) ||
+            (request.resource.data.get('serviceId', '') != '' && isParentServiceOwner(request.resource.data.serviceId))
+          )
+        )
+      ) && isValidPing(request.resource.data);
+
+      allow update: if (
+        isAdmin() || isOwner(resource.data) || (
+          resource.data.get('serviceId', '') != '' &&
+          isParentServiceOwner(resource.data.serviceId)
+        )
+      ) && isValidPing(request.resource.data);
+
+      allow delete: if isAdmin() || isOwner(resource.data) || (
+        resource.data.get('serviceId', '') != '' &&
+        isParentServiceOwner(resource.data.serviceId)
+      );
     }
 
-    // Profils utilisateurs
+    // =========================================================================
+    // COLLECTION: /logs/{logId}
+    // =========================================================================
+    match /logs/{logId} {
+      // Lecture : administrateur ou propriétaire de la ressource liée au log
+      allow read: if isAdmin() || isOwner(resource.data) || (
+        resource.data.get('serviceId', '') != '' &&
+        isParentServiceOwner(resource.data.serviceId)
+      );
+
+      // Création : utilisateurs authentifiés pour leurs propres actions/services
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        request.resource.data.get('ownerEmail', request.auth.token.email) == request.auth.token.email ||
+        request.resource.data.get('userId', request.auth.uid) == request.auth.uid ||
+        (request.resource.data.get('serviceId', '') != '' && isParentServiceOwner(request.resource.data.serviceId))
+      ) && isValidLog(request.resource.data);
+
+      // Modification et suppression : strictement réservées à l'administrateur (immutabilité des logs)
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: /users/{userId}
+    // =========================================================================
     match /users/{userId} {
-      allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      // Lecture : l'utilisateur lui-même (request.auth.uid == userId) ou l'administrateur
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+
+      // Création et Modification : chaque utilisateur ne gère que son propre profil
+      allow create: if (isAdmin() || (isAuthenticated() && request.auth.uid == userId)) &&
+                       isValidUser(request.resource.data) &&
+                       userRoleProtectedOnCreate();
+
+      allow update: if (isAdmin() || (isAuthenticated() && request.auth.uid == userId)) &&
+                       isValidUser(request.resource.data) &&
+                       userRoleProtectedOnUpdate();
+
+      // Suppression : l'utilisateur lui-même ou l'administrateur
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    // =========================================================================
+    // DÉFENSE EN PROFONDEUR : REFUS PAR DÉFAUT
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
