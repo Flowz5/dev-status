@@ -31,10 +31,10 @@ export function VanguardSplineChart({ services, selectedService }) {
   const minLatency = chartData.length > 0 ? Math.min(...chartData.map(d => d.latency)) : baseLatency;
 
   return (
-    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between">
       
       {/* En-tête en Français */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-4">
         <div>
           <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#9d92b5]">
             HISTORIQUE DES TEMPS DE RÉPONSE (LATENCE)
@@ -43,13 +43,13 @@ export function VanguardSplineChart({ services, selectedService }) {
             {selectedService ? `Vérifications récentes pour ${selectedService.name}` : 'Moyenne sur l\'ensemble des projets'}
           </p>
         </div>
-        <span className="text-[11px] font-mono text-[#f97356] font-bold">
+        <span className="self-start sm:self-auto text-[11px] font-mono text-[#f97356] font-bold">
           {baseLatency} ms actuel
         </span>
       </div>
 
       {/* Graphique Spline Douce */}
-      <div className="relative h-48 sm:h-56 w-full">
+      <div className="relative h-44 sm:h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
             <defs>
@@ -98,7 +98,7 @@ export function VanguardSplineChart({ services, selectedService }) {
       </div>
 
       {/* Footer sous la courbe */}
-      <div className="flex items-center justify-between text-xs font-mono pt-3 border-t border-[#231d34] mt-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono pt-3 border-t border-[#231d34] mt-3">
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-bold text-white font-mono">{minLatency} ms</span>
           <span className="text-[11px] text-[#7a718f]">meilleur temps enregistré</span>

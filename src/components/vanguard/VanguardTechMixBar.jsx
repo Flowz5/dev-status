@@ -13,21 +13,21 @@ export function VanguardTechMixBar({ services }) {
   const otherPct = Math.max(0, 100 - vercelPct - firebasePct);
 
   return (
-    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between">
       
       {/* En-tête en Français */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
         <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#9d92b5]">
           RÉPARTITION DES ENVIRONNEMENTS
         </h3>
-        <span className="text-[11px] font-mono text-[#716885]">
+        <span className="text-[10px] sm:text-[11px] font-mono text-[#716885]">
           Vercel & Firebase
         </span>
       </div>
 
       {/* Barre Horizontale Multi-Segmentée */}
       <div>
-        <div className="flex items-center justify-between text-[11px] font-mono text-[#7a718f] mb-1.5">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 text-[10px] sm:text-[11px] font-mono text-[#7a718f] mb-1.5">
           <span>Vercel ({vercelPct}%)</span>
           <span>Firebase ({firebasePct}%)</span>
           <span>APIs & Autres ({otherPct}%)</span>
@@ -35,28 +35,32 @@ export function VanguardTechMixBar({ services }) {
 
         <div className="w-full h-8 rounded-xl overflow-hidden flex p-0.5 bg-[#100d1c] border border-[#231d34] gap-0.5">
           {/* Segment 1 : Vercel */}
-          <div
-            style={{ width: `${vercelPct}%` }}
-            className="h-full bg-[#f97356] rounded-l-lg flex items-center justify-center text-xs font-bold font-mono text-white transition-all duration-500 shadow-sm"
-            title={`Vercel: ${vercelCount} projet(s)`}
-          >
-            {vercelPct}% Vercel
-          </div>
+          {vercelPct > 0 && (
+            <div
+              style={{ width: `${vercelPct}%` }}
+              className="h-full bg-[#f97356] rounded-l-lg flex items-center justify-center text-[10px] sm:text-xs font-bold font-mono text-white transition-all duration-500 shadow-sm truncate px-1"
+              title={`Vercel: ${vercelCount} projet(s)`}
+            >
+              {vercelPct}%<span className="hidden sm:inline">&nbsp;Vercel</span>
+            </div>
+          )}
 
           {/* Segment 2 : Firebase */}
-          <div
-            style={{ width: `${firebasePct}%` }}
-            className="h-full bg-[#fde68a] text-[#291b00] flex items-center justify-center text-xs font-bold font-mono transition-all duration-500 shadow-sm"
-            title={`Firebase: ${firebaseCount} projet(s)`}
-          >
-            {firebasePct}% Firebase
-          </div>
+          {firebasePct > 0 && (
+            <div
+              style={{ width: `${firebasePct}%` }}
+              className="h-full bg-[#fde68a] text-[#291b00] flex items-center justify-center text-[10px] sm:text-xs font-bold font-mono transition-all duration-500 shadow-sm truncate px-1"
+              title={`Firebase: ${firebaseCount} projet(s)`}
+            >
+              {firebasePct}%<span className="hidden sm:inline">&nbsp;Firebase</span>
+            </div>
+          )}
 
           {/* Segment 3 : Autre */}
           {otherPct > 0 && (
             <div
               style={{ width: `${otherPct}%` }}
-              className="h-full bg-[#c084fc] rounded-r-lg text-white flex items-center justify-center text-[10px] font-bold font-mono transition-all duration-500"
+              className="h-full bg-[#c084fc] rounded-r-lg text-white flex items-center justify-center text-[10px] font-bold font-mono transition-all duration-500 truncate px-1"
               title="Autres services"
             >
               {otherPct}%

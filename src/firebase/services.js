@@ -8,6 +8,7 @@ import {
   deleteDoc,
   onSnapshot,
   query,
+  where,
   orderBy
 } from 'firebase/firestore';
 import { INITIAL_SERVICES } from '../data/initialServices';
@@ -28,9 +29,13 @@ export function subscribeToServices(userEmail, onServicesUpdated) {
   const isAdmin = userEmail === ADMIN_EMAIL;
 
   if (db) {
-    // Mode Firebase Firestore actif
+    // Mode Firebase Firestore actif : requête scopée pour respecter les règles de sécurité Firestore
     const servicesRef = collection(db, 'services');
-    const unsubscribe = onSnapshot(servicesRef, async (snapshot) => {
+    const q = isAdmin
+      ? servicesRef
+      : query(servicesRef, where('ownerEmail', '==', userEmail));
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const allServices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       // Filtrer strictement les services appartenant à l'utilisateur

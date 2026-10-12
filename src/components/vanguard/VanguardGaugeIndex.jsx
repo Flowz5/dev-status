@@ -13,7 +13,7 @@ export function VanguardGaugeIndex({ services }) {
   const strokeDashoffset = ((100 - scoreNum) / 100) * arcLength;
 
   return (
-    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between">
       
       {/* Header en Français */}
       <div className="flex items-center justify-between mb-2">
@@ -108,7 +108,7 @@ export function VanguardGaugeIndex({ services }) {
 
       {/* Footer explication */}
       <p className="text-[10px] font-mono text-[#625977] mt-3 pt-2 border-t border-[#231d34]">
-        Indice basé sur la disponibilité et la latence moyenne de vos 4 projets.
+        Indice basé sur la disponibilité et la latence moyenne de vos projets.
       </p>
 
     </div>
