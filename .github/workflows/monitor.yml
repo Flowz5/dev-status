@@ -1,0 +1,26 @@
+name: DevStatus Health Monitor
+
+on:
+  schedule:
+    # Exécution automatique toutes les 15 minutes (24h/24, 7j/7)
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permet aussi de lancer manuellement
+
+jobs:
+  ping-services:
+    name: Ping Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer les dépendances
+        run: npm ci || npm install
+
+      - name: Lancer le monitoring
+        run: node scripts/ping-worker.mjs
