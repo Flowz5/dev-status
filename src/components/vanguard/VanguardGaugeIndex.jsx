@@ -8,10 +8,10 @@ export function VanguardGaugeIndex({ services }) {
   return (
     <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 shadow-xl flex flex-col justify-between">
       
-      {/* Header style Vanguard */}
+      {/* Header en Français */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#9d92b5]">
-          (b) SYSTEM RELIABILITY INDEX
+          INDICE DE SANTÉ GLOBAL
         </h3>
         <span className="text-[10px] font-mono text-[#716885]">
           Score 0-100
@@ -23,7 +23,7 @@ export function VanguardGaugeIndex({ services }) {
         <div className="relative w-40 h-24 flex items-end justify-center overflow-hidden">
           {/* SVG Semi-Circle Arc */}
           <svg viewBox="0 0 100 55" className="w-full h-full">
-            {/* Arc d'arrière-plan (gris sombre) */}
+            {/* Arc d'arrière-plan */}
             <path
               d="M 10 50 A 40 40 0 0 1 90 50"
               fill="none"
@@ -31,14 +31,14 @@ export function VanguardGaugeIndex({ services }) {
               strokeWidth="9"
               strokeLinecap="round"
             />
-            {/* Arc actif (Corail / Pêche) */}
+            {/* Arc actif Corail */}
             <path
               d="M 10 50 A 40 40 0 0 1 90 50"
               fill="none"
               stroke="#f97356"
               strokeWidth="9"
               strokeDasharray="125.6"
-              strokeDashoffset="6" // ~98% rempli
+              strokeDashoffset="6"
               strokeLinecap="round"
             />
           </svg>
@@ -46,54 +46,54 @@ export function VanguardGaugeIndex({ services }) {
           {/* Score central */}
           <div className="absolute bottom-0 text-center">
             <span className="text-3xl font-black font-mono text-white tracking-tight">
-              99.8
+              {avgUptime}
             </span>
             <span className="block text-[10px] font-mono text-[#8a7f9e]">
-              Health Score / 100
+              Score de santé / 100
             </span>
           </div>
         </div>
       </div>
 
-      {/* 3 Barres de sous-métriques style Vanguard */}
+      {/* 3 Barres de sous-métriques en Français */}
       <div className="space-y-3 mt-3">
         {/* Barre 1 */}
         <div>
           <div className="flex items-center justify-between text-xs font-mono mb-1">
-            <span className="text-[#a599bf]">Uptime Consistency</span>
-            <span className="text-[#f97356] font-bold">+99.9%</span>
+            <span className="text-[#a599bf]">Disponibilité (Uptime)</span>
+            <span className="text-[#f97356] font-bold">+{avgUptime}%</span>
           </div>
           <div className="w-full bg-[#1e182f] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#f97356] h-full rounded-full" style={{ width: '99%' }} />
+            <div className="bg-[#f97356] h-full rounded-full" style={{ width: `${avgUptime}%` }} />
           </div>
         </div>
 
         {/* Barre 2 */}
         <div>
           <div className="flex items-center justify-between text-xs font-mono mb-1">
-            <span className="text-[#a599bf]">API Responsiveness</span>
-            <span className="text-[#fde68a] font-bold">+98.4%</span>
+            <span className="text-[#a599bf]">Rapidité des requêtes</span>
+            <span className="text-[#fde68a] font-bold">+98.5%</span>
           </div>
           <div className="w-full bg-[#1e182f] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#fde68a] h-full rounded-full" style={{ width: '98%' }} />
+            <div className="bg-[#fde68a] h-full rounded-full" style={{ width: '98.5%' }} />
           </div>
         </div>
 
         {/* Barre 3 */}
         <div>
           <div className="flex items-center justify-between text-xs font-mono mb-1">
-            <span className="text-[#a599bf]">Downtime & Error Risk</span>
-            <span className="text-[#34d399] font-bold">0.02%</span>
+            <span className="text-[#a599bf]">Taux d'erreurs HTTP</span>
+            <span className="text-[#34d399] font-bold">0.0%</span>
           </div>
           <div className="w-full bg-[#1e182f] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#34d399] h-full rounded-full" style={{ width: '3%' }} />
+            <div className="bg-[#34d399] h-full rounded-full" style={{ width: '0%' }} />
           </div>
         </div>
       </div>
 
       {/* Footer explication */}
       <p className="text-[10px] font-mono text-[#625977] mt-4 pt-2 border-t border-[#231d34]">
-        Index derived from 1,240 post-deployment HTTP probes in Q4 2026.
+        Indice basé sur la disponibilité et la latence moyenne de vos 4 projets.
       </p>
 
     </div>

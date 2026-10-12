@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ChevronRight, Activity, Server, Zap, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export function VanguardSidebar({
   services,
@@ -14,29 +14,32 @@ export function VanguardSidebar({
     : '100.00';
 
   const updatedTimeText = lastGlobalCheck
-    ? new Date(lastGlobalCheck).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    : 'Live';
+    ? new Date(lastGlobalCheck).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : 'À l\'instant';
+
+  const vercelCount = activeServices.filter(s => s.category === 'Vercel').length;
+  const firebaseCount = activeServices.filter(s => s.category === 'Firebase').length;
 
   return (
     <aside className="w-full lg:w-72 xl:w-80 flex-shrink-0 flex flex-col gap-4">
       
-      {/* Container Tree Navigation */}
+      {/* Container Navigation Arborescente */}
       <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 flex flex-col justify-between shadow-xl">
         
         <div>
-          {/* Header de la sidebar style Vanguard */}
+          {/* Header de la sidebar en Français */}
           <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[#7e7592] pb-3 border-b border-[#251f38]">
-            <span className="font-bold text-[#b4a9cc]">SERVICES NETWORK TREE</span>
+            <span className="font-bold text-[#b4a9cc]">VOS PROJETS D'ÉQUIPE</span>
             <div className="flex items-center gap-6">
-              <span>LATENCY</span>
-              <span>TREND</span>
+              <span>LATENCE</span>
+              <span>ÉTAT</span>
             </div>
           </div>
 
           {/* Arborescence (Tree) */}
           <div className="mt-3 space-y-1">
             
-            {/* Nœud Racine Actif (Cluster Global) */}
+            {/* Nœud Racine (Vue Globale) */}
             <div
               onClick={() => onSelectService(null)}
               className={`rounded-xl p-2.5 transition cursor-pointer border ${
@@ -49,44 +52,44 @@ export function VanguardSidebar({
                 <div className="flex items-center gap-2">
                   <span className="text-[#f97356] font-bold text-xs">→</span>
                   <span className="text-xs font-bold font-sans tracking-tight text-white">
-                    DevStatus Core Cluster
+                    Tous les projets (Vue globale)
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-mono">
-                  <span className="font-bold text-[#f97356]">{total} Apps</span>
+                  <span className="font-bold text-[#f97356]">{total} apps</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-[#f97356]" />
                 </div>
               </div>
 
-              {/* Sous-branches arborescentes reliées */}
+              {/* Sous-branches réelles */}
               {selectedServiceId === null && (
                 <div className="mt-2.5 ml-3 pl-3 border-l border-[#542d32] space-y-1.5 text-[11px] font-mono text-[#c5b5bb]">
                   <div className="flex items-center justify-between hover:text-white transition">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-px bg-[#f97356]" />
-                      Vercel Frontends
+                      Projets Vercel
                     </span>
-                    <span className="text-[#e2a89c]">3 apps</span>
+                    <span className="text-[#e2a89c]">{vercelCount} apps</span>
                   </div>
                   <div className="flex items-center justify-between hover:text-white transition">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-px bg-[#f97356]" />
-                      Firebase Hosting
+                      Projets Firebase
                     </span>
-                    <span className="text-[#e2a89c]">1 app</span>
+                    <span className="text-[#e2a89c]">{firebaseCount} app</span>
                   </div>
                   <div className="flex items-center justify-between hover:text-white transition">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-px bg-[#f97356]" />
-                      Background Workers
+                      Vérification Cron
                     </span>
-                    <span className="text-[#e2a89c]">Active</span>
+                    <span className="text-[#34d399]">15 min</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Liste des Services individuels dans l'arbre */}
+            {/* Liste de chaque service réel */}
             <div className="pt-2 space-y-1">
               {services.map((service) => {
                 const isSelected = selectedServiceId === service.id;
@@ -104,7 +107,7 @@ export function VanguardSidebar({
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate pr-2">
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isOperational ? 'bg-[#34d399]' : 'bg-[#ef4444]'}`} />
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isOperational ? 'bg-[#34d399]' : 'bg-[#ef4444]'}`} />
                       <span className="truncate font-sans font-medium text-white">
                         {service.name}
                       </span>
@@ -124,35 +127,35 @@ export function VanguardSidebar({
           </div>
         </div>
 
-        {/* Section Inférieure : NETWORK CAPACITY STATUS */}
+        {/* Section Inférieure : ÉTAT DU MONITORING */}
         <div className="mt-6 pt-4 border-t border-[#251f38] bg-[#120e1e] p-3 rounded-xl border border-[#231d34]">
           <h4 className="text-[10px] font-mono uppercase tracking-wider text-[#827899] font-bold mb-2">
-            NETWORK CAPACITY STATUS
+            RÉSUMÉ DU SYSTÈME
           </h4>
 
           <div className="space-y-1.5 text-xs font-mono">
             <div className="flex items-center justify-between text-[#a095b8]">
-              <span>Total Active Services</span>
+              <span>Applications surveillées</span>
               <span className="text-white font-bold">{total}</span>
             </div>
             <div className="flex items-center justify-between text-[#a095b8]">
-              <span>Overall Availability</span>
+              <span>Disponibilité globale</span>
               <span className="text-[#f97356] font-bold">{avgUptime}%</span>
             </div>
             <div className="flex items-center justify-between text-[#a095b8]">
-              <span>Synthetic Checks</span>
-              <span className="text-white font-bold">1,240 / mo</span>
+              <span>Intervalle de ping</span>
+              <span className="text-white font-bold">15 min</span>
             </div>
             <div className="flex items-center justify-between pt-1 border-t border-[#231d34]">
-              <span className="text-[#a095b8]">System Health</span>
+              <span>Santé générale</span>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-[#113123] text-[#34d399] border border-[#1b4b35]">
-                OPTIMAL
+                OPÉRATIONNEL
               </span>
             </div>
           </div>
 
           <p className="text-[10px] text-[#635b75] mt-2 font-mono">
-            Updated {updatedTimeText} • DevStatus Live
+            Dernier check : {updatedTimeText}
           </p>
         </div>
 

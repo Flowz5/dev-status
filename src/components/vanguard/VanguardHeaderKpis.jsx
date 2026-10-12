@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, RefreshCw } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 export function VanguardHeaderKpis({
   selectedService,
@@ -9,8 +9,8 @@ export function VanguardHeaderKpis({
   const activeServices = services.filter(s => s.active !== false);
   const total = activeServices.length;
 
-  const title = selectedService ? selectedService.name.toUpperCase() : "DEVSTATUS PRODUCTION HUB";
-  const subtitle = selectedService ? selectedService.url : "CORE INFRASTRUCTURE & MULTI-CLOUD STATUS";
+  const title = selectedService ? selectedService.name.toUpperCase() : "VUE D'ENSEMBLE DES SERVICES";
+  const subtitle = selectedService ? selectedService.url : "Surveillance en temps réel de vos déploiements Vercel, Firebase et APIs";
 
   // Uptime
   const uptime = selectedService 
@@ -22,19 +22,14 @@ export function VanguardHeaderKpis({
     ? (selectedService.responseTime || 118)
     : Math.round(activeServices.reduce((acc, s) => acc + (s.responseTime || 0), 0) / (activeServices.filter(s => s.responseTime > 0).length || 1));
 
-  const teamAvatars = [
-    { label: 'JD', bg: 'bg-[#f97356]' },
-    { label: 'MS', bg: 'bg-[#fb923c]' },
-    { label: 'LC', bg: 'bg-[#fde68a] text-black' },
-    { label: 'KA', bg: 'bg-[#c084fc]' },
-    { label: 'RB', bg: 'bg-[#818cf8]' }
-  ];
+  // Incidents
+  const downCount = activeServices.filter(s => s.status === 'down').length;
 
   return (
     <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         
-        {/* Titre & 3 Grands Chiffres KPIs */}
+        {/* Titre & 3 Grands Chiffres KPIs en Français */}
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white font-sans uppercase">
@@ -45,10 +40,11 @@ export function VanguardHeaderKpis({
                 href={selectedService.url} 
                 target="_blank" 
                 rel="noreferrer" 
-                className="text-[#f97356] hover:text-[#ff8a70] transition"
-                title="Ouvrir le site"
+                className="text-[#f97356] hover:text-[#ff8a70] transition flex items-center gap-1 text-xs font-mono"
+                title="Ouvrir le site en direct"
               >
-                <ExternalLink className="w-4 h-4" />
+                <span>Visiter</span>
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
           </div>
@@ -56,7 +52,7 @@ export function VanguardHeaderKpis({
             {subtitle}
           </p>
 
-          {/* Les 3 métriques style Vanguard */}
+          {/* Les 3 métriques claires et compréhensibles */}
           <div className="flex items-baseline gap-6 sm:gap-10 mt-5 flex-wrap">
             
             {/* KPI 1 : Disponibilité */}
@@ -66,31 +62,31 @@ export function VanguardHeaderKpis({
                   {uptime}%
                 </span>
                 <span className="text-xs font-mono text-[#8c829e]">
-                  uptime rate
+                  disponibilité (30j)
                 </span>
               </div>
             </div>
 
-            {/* KPI 2 : Latence / Net change */}
+            {/* KPI 2 : Latence moyenne */}
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-black text-[#f97356] font-mono tracking-tight">
-                  +{latency} ms
+                  {latency} ms
                 </span>
                 <span className="text-xs font-mono text-[#8c829e]">
-                  avg response
+                  temps de réponse
                 </span>
               </div>
             </div>
 
-            {/* KPI 3 : Cycle de vérification */}
+            {/* KPI 3 : Incidents en cours */}
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
-                  15 min
+                <span className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${downCount === 0 ? 'text-[#34d399]' : 'text-[#ef4444]'}`}>
+                  {downCount === 0 ? '0' : downCount}
                 </span>
                 <span className="text-xs font-mono text-[#8c829e]">
-                  cron check interval
+                  {downCount === 0 ? 'incident en cours' : 'service(s) en panne'}
                 </span>
               </div>
             </div>
@@ -98,38 +94,18 @@ export function VanguardHeaderKpis({
           </div>
         </div>
 
-        {/* Côté Droit : Avatars Équipe & Action directe */}
-        <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-3">
-          
-          <div className="text-left lg:text-right">
-            {/* Pile d'avatars */}
-            <div className="flex items-center -space-x-1.5">
-              {teamAvatars.map((member, idx) => (
-                <div
-                  key={idx}
-                  className={`w-7 h-7 rounded-full border-2 border-[#161224] ${member.bg} flex items-center justify-center text-[10px] font-bold font-mono text-white shadow-sm`}
-                  title={`Team Member ${member.label}`}
-                >
-                  {member.label}
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-[#716885] font-mono mt-1.5">
-              devops & engineering team
-            </p>
-          </div>
-
-          {selectedService && (
+        {/* Action directe sur le service sélectionné */}
+        {selectedService && (
+          <div className="flex items-center gap-3">
             <button
               onClick={() => onPingSelected(selectedService)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#271d2b] hover:bg-[#382638] text-xs font-mono text-[#f97356] border border-[#592b34] transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#271d2b] hover:bg-[#382638] text-xs font-mono font-bold text-[#f97356] border border-[#592b34] transition shadow-sm"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Ping Now</span>
+              <span>Tester {selectedService.name}</span>
             </button>
-          )}
-
-        </div>
+          </div>
+        )}
 
       </div>
     </div>

@@ -22,7 +22,7 @@ import {
 } from './firebase/services';
 import { db } from './firebase/config';
 import { INITIAL_SERVICES } from './data/initialServices';
-import { RefreshCw, ExternalLink, Activity, Plus } from 'lucide-react';
+import { RefreshCw, Plus } from 'lucide-react';
 
 export default function App() {
   const [services, setServices] = useState([]);
@@ -53,11 +53,11 @@ export default function App() {
     setIsRefreshing(true);
     try {
       await pingAllServices(services, (name, current, total) => {
-        setRefreshProgress(`Pinging ${name} (${current}/${total})...`);
+        setRefreshProgress(`Vérification de ${name} (${current}/${total})...`);
       });
       setLastGlobalCheck(new Date().toISOString());
     } catch (err) {
-      console.error("Erreur refresh all :", err);
+      console.error("Erreur rafraîchissement global :", err);
     } finally {
       setIsRefreshing(false);
       setRefreshProgress(null);
@@ -97,7 +97,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0e0c16] text-[#e6e2f0] flex flex-col font-sans selection:bg-[#f97356] selection:text-white">
       
-      {/* 1. Navbar style Vanguard */}
+      {/* 1. Navbar en Français */}
       <VanguardNavbar
         services={services}
         isRefreshing={isRefreshing}
@@ -109,7 +109,7 @@ export default function App() {
         lastGlobalCheck={lastGlobalCheck}
       />
 
-      {/* Progress banner during ping */}
+      {/* Bannière de progression pendant le ping */}
       {refreshProgress && (
         <div className="bg-[#f97356] text-white text-xs py-1 px-4 text-center font-mono font-bold flex items-center justify-center gap-2">
           <RefreshCw className="w-3 h-3 animate-spin" />
@@ -117,12 +117,12 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. Main Container : Sidebar Gauche + Dashboard Central */}
+      {/* 2. Container Principal : Sidebar Gauche + Dashboard Central */}
       <main className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8">
         
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           
-          {/* A. Sidebar Gauche : Tree Network & Capacity Status */}
+          {/* A. Sidebar Gauche : Arborescence des projets & Résumé */}
           <VanguardSidebar
             services={services}
             selectedServiceId={selectedServiceId}
@@ -130,17 +130,17 @@ export default function App() {
             lastGlobalCheck={lastGlobalCheck}
           />
 
-          {/* B. Corps Principal Vanguard */}
+          {/* B. Corps Principal du Dashboard */}
           <div className="flex-1 w-full space-y-6">
             
-            {/* Haut : En-tête du Hub + 3 Grands KPIs + Avatars */}
+            {/* Haut : Titre du projet / Hub + 3 Grands Chiffres KPIs */}
             <VanguardHeaderKpis
               selectedService={selectedService}
               services={services}
               onPingSelected={handlePingSingle}
             />
 
-            {/* Milieu : 2 Cartes Larges (Spline Chart & Tech Mix Bar) */}
+            {/* Milieu : 2 Grandes Cartes (Courbe de Latence & Répartition Vercel/Firebase) */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <VanguardSplineChart
                 services={services}
@@ -151,7 +151,7 @@ export default function App() {
               />
             </div>
 
-            {/* Bas : 3 Colonnes Équilibrées (Pipeline, Jauge Donut, Cibles SLA) */}
+            {/* Bas : 3 Colonnes Claires (État par Catégorie, Jauge de Santé, Objectifs SLA) */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <VanguardHealthPipeline
                 services={services}
@@ -164,15 +164,15 @@ export default function App() {
               />
             </div>
 
-            {/* Liste Détaillée & Cartes d'Historique de Vérifications */}
+            {/* Section Détaillée : Les cartes des 4 projets avec les barres de 30 vérifications */}
             <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#251f38]">
                 <div>
                   <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
-                    {selectedService ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` : "SURVEILLANCE DES 4 SERVICES ACTIFS (30 DERNIERS CHECKS)"}
+                    {selectedService ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)"}
                   </h3>
                   <p className="text-xs text-[#7e7592] font-mono mt-0.5">
-                    Historique individuel, codes HTTP et barres segmentées de latence en temps réel
+                    Pastilles de statut, temps de réponse en millisecondes et date du dernier contrôle
                   </p>
                 </div>
 
@@ -187,7 +187,7 @@ export default function App() {
                 )}
               </div>
 
-              {/* Cartes détaillées avec barres de 30 vérifications */}
+              {/* Cartes individuelles des projets */}
               <div className="grid grid-cols-1 gap-4">
                 {(selectedService ? [selectedService] : services).map((service) => (
                   <ServiceCard
@@ -208,16 +208,16 @@ export default function App() {
 
       </main>
 
-      {/* Footer minimaliste style Vanguard */}
+      {/* Footer en Français */}
       <footer className="border-t border-[#231d36] bg-[#0c0a13] py-4 text-xs font-mono text-[#6c6382]">
         <div className="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[#f97356] font-bold">DEVSTATUS VANGUARD</span>
-            <span>• Monitoring Platform 2026</span>
+            <span className="text-[#f97356] font-bold">DEVSTATUS</span>
+            <span>• Monitoring de vos Projets d'Équipe</span>
           </div>
 
           <div className="flex items-center gap-4 text-[#8a7f9e]">
-            <span>Firebase Firestore Live</span>
+            <span>Connecté à Firebase Firestore</span>
             <span>•</span>
             <a
               href="https://github.com/Flowz5/dev-status"
@@ -225,7 +225,7 @@ export default function App() {
               rel="noreferrer"
               className="text-[#f97356] hover:underline"
             >
-              GitHub Repository
+              Dépôt GitHub
             </a>
           </div>
         </div>
