@@ -1,29 +1,34 @@
 import React from 'react';
 
 export function VanguardHealthPipeline({ services }) {
-  const activeCount = services.filter(s => s.active !== false).length;
+  const activeServices = services.filter(s => s.active !== false);
+  const vercelServices = activeServices.filter(s => s.category === 'Vercel');
+  const firebaseServices = activeServices.filter(s => s.category === 'Firebase');
+  const otherServices = activeServices.filter(s => s.category !== 'Vercel' && s.category !== 'Firebase');
 
   const pipelineItems = [
     {
       title: 'Applications Vercel (Frontends)',
-      badge: 'EN LIGNE',
-      badgeClass: 'bg-[#143224] text-[#34d399] border-[#1d4c36]',
-      cases: '3 projets',
-      desc: 'Dashboard, Tab, Topaze'
+      badge: vercelServices.every(s => s.status === 'operational') ? 'EN LIGNE' : 'ATTENTION',
+      badgeClass: vercelServices.every(s => s.status === 'operational')
+        ? 'bg-[#143224] text-[#34d399] border-[#1d4c36]'
+        : 'bg-[#3b2326] text-[#f97356] border-[#5e2e34]',
+      cases: `${vercelServices.length} projet${vercelServices.length > 1 ? 's' : ''}`,
+      desc: vercelServices.map(s => s.name).slice(0, 3).join(', ') || 'Aucun projet'
     },
     {
       title: 'Plateforme Firebase (Hosting)',
-      badge: 'RAPIDE',
+      badge: firebaseServices.length > 0 && firebaseServices.every(s => s.status === 'operational') ? 'RAPIDE' : 'EN LIGNE',
       badgeClass: 'bg-[#38331d] text-[#fde68a] border-[#5c542b]',
-      cases: '1 projet',
-      desc: 'Ma Veille Tech (54 ms)'
+      cases: `${firebaseServices.length} projet${firebaseServices.length > 1 ? 's' : ''}`,
+      desc: firebaseServices.map(s => s.name).slice(0, 3).join(', ') || 'Aucun projet'
     },
     {
-      title: 'Outils Internes & Prospection',
+      title: 'APIs & Services Web',
       badge: 'STABLE',
       badgeClass: 'bg-[#3b2326] text-[#f97356] border-[#5e2e34]',
-      cases: '1 projet',
-      desc: 'Tab Prospection'
+      cases: `${otherServices.length} service${otherServices.length > 1 ? 's' : ''}`,
+      desc: otherServices.map(s => s.name).slice(0, 3).join(', ') || 'APIs et backends'
     },
     {
       title: 'Surveillance Cron Périodique',
@@ -35,11 +40,11 @@ export function VanguardHealthPipeline({ services }) {
   ];
 
   const avgLatency = Math.round(
-    services.reduce((acc, s) => acc + (s.responseTime || 0), 0) / (services.filter(s => s.responseTime > 0).length || 1)
+    activeServices.reduce((acc, s) => acc + (s.responseTime || 0), 0) / (activeServices.filter(s => s.responseTime > 0).length || 1)
   );
 
   return (
-    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+    <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between">
       
       <div>
         {/* Header en Français */}

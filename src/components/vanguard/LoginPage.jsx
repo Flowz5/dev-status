@@ -57,19 +57,19 @@ export function LoginPage({ onAuthSuccess }) {
       <div className="absolute bottom-[-10%] right-[-10%] w-[550px] h-[550px] rounded-full bg-[#7c3aed]/10 blur-[150px] pointer-events-none" />
 
       {/* Barre supérieure minimale */}
-      <header className="relative z-10 max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f97356] to-[#d94f32] p-2 flex items-center justify-center shadow-lg shadow-[#f97356]/20">
-            <Activity className="w-6 h-6 text-white" />
+      <header className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#f97356] to-[#d94f32] p-1.5 sm:p-2 flex items-center justify-center shadow-lg shadow-[#f97356]/20">
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono font-black text-lg tracking-wider text-white">DEVSTATUS</span>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-[#251f38] text-[#f97356] border border-[#3b3254]">
+              <span className="font-mono font-black text-base sm:text-lg tracking-wider text-white">DEVSTATUS</span>
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-[#251f38] text-[#f97356] border border-[#3b3254]">
                 Espace Sécurisé
               </span>
             </div>
-            <p className="text-[11px] font-mono text-[#8a7f9e]">Supervision de vos projets d'équipe en temps réel</p>
+            <p className="text-[10px] sm:text-[11px] font-mono text-[#8a7f9e]">Supervision de vos projets d'équipe en temps réel</p>
           </div>
         </div>
 
@@ -80,33 +80,33 @@ export function LoginPage({ onAuthSuccess }) {
       </header>
 
       {/* Contenu Central : Card de Connexion */}
-      <main className="relative z-10 max-w-5xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row items-center gap-12 justify-center flex-1">
+      <main className="relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col lg:flex-row items-center gap-8 lg:gap-12 justify-center flex-1">
         
         {/* Colonne Gauche : Présentation du Dashboard Privé */}
-        <div className="w-full lg:w-1/2 space-y-6 text-left">
+        <div className="w-full lg:w-1/2 space-y-4 sm:space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1b152d] border border-[#2e244d] text-xs font-mono text-[#fde68a]">
             <Zap className="w-3.5 h-3.5 text-[#f97356]" />
             <span>Chaque compte possède son propre espace</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight font-sans">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight font-sans">
             Surveillez la santé de <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f97356] to-[#fde68a]">vos projets</span> en continu.
           </h1>
 
-          <p className="text-sm text-[#9e94b5] leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#9e94b5] leading-relaxed">
             Connectez-vous pour accéder à votre tableau de bord dédié. Vous pourrez enregistrer vos propres URLs d'applications et d'APIs, suivre les temps de réponse en millisecondes et visualiser vos historiques de disponibilité.
           </p>
 
-          <div className="space-y-3 pt-2 font-mono text-xs text-[#c2bad3]">
-            <div className="flex items-center gap-3">
+          <div className="space-y-2.5 sm:space-y-3 pt-2 font-mono text-xs text-[#c2bad3]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <CheckCircle2 className="w-4 h-4 text-[#34d399] flex-shrink-0" />
               <span>Tableau de bord privé et cloisonné par utilisateur</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <CheckCircle2 className="w-4 h-4 text-[#34d399] flex-shrink-0" />
               <span>Sonde périodique avec temps de réponse en ms & HTTP 200</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <CheckCircle2 className="w-4 h-4 text-[#34d399] flex-shrink-0" />
               <span>Courbes de tendance, score de santé et alertes</span>
             </div>
@@ -115,7 +115,7 @@ export function LoginPage({ onAuthSuccess }) {
 
         {/* Colonne Droite : Formulaire d'authentification */}
         <div className="w-full lg:w-[420px]">
-          <div className="bg-[#161224] border border-[#251f38] rounded-3xl p-7 shadow-2xl relative backdrop-blur-sm">
+          <div className="bg-[#161224] border border-[#251f38] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl relative backdrop-blur-sm">
             
             <div className="text-left mb-6">
               <h2 className="text-xl font-bold text-white font-sans">

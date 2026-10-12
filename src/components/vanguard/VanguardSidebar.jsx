@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUpRight, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 
 export function VanguardSidebar({
   services,
@@ -8,6 +8,7 @@ export function VanguardSidebar({
   lastGlobalCheck,
   currentUser
 }) {
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
   const activeServices = services.filter(s => s.active !== false);
   const total = activeServices.length;
   const avgUptime = total > 0
@@ -28,17 +29,26 @@ export function VanguardSidebar({
       <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-4 flex flex-col justify-between shadow-xl">
         
         <div>
-          {/* Header de la sidebar en Français */}
+          {/* Header de la sidebar en Français avec bouton accordéon mobile */}
           <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[#7e7592] pb-3 border-b border-[#251f38]">
-            <span className="font-bold text-[#b4a9cc]">VOS PROJETS ({total})</span>
-            <div className="flex items-center gap-6">
-              <span>LATENCE</span>
+            <button
+              onClick={() => setIsMobileExpanded(prev => !prev)}
+              className="lg:pointer-events-none flex items-center gap-2 font-bold text-[#b4a9cc] hover:text-white lg:hover:text-[#b4a9cc] transition cursor-pointer"
+            >
+              <Layers className="w-3.5 h-3.5 text-[#f97356]" />
+              <span>VOS PROJETS ({total})</span>
+              <span className="lg:hidden text-[#f97356] ml-1">
+                {isMobileExpanded ? <ChevronUp className="w-3.5 h-3.5 inline" /> : <ChevronDown className="w-3.5 h-3.5 inline" />}
+              </span>
+            </button>
+            <div className="flex items-center gap-4 sm:gap-6">
+              <span className="hidden sm:inline">LATENCE</span>
               <span>ÉTAT</span>
             </div>
           </div>
 
-          {/* Arborescence (Tree) */}
-          <div className="mt-3 space-y-1">
+          {/* Arborescence (Tree) - Toujours visible sur lg, repliable sur mobile */}
+          <div className={`mt-3 space-y-1 ${isMobileExpanded ? 'block' : 'hidden lg:block'}`}>
             
             {/* Nœud Racine (Vue Globale) */}
             <div
@@ -129,7 +139,7 @@ export function VanguardSidebar({
         </div>
 
         {/* Section Inférieure : ÉTAT DU MONITORING */}
-        <div className="mt-6 pt-4 border-t border-[#251f38] bg-[#120e1e] p-3 rounded-xl border border-[#231d34]">
+        <div className={`mt-6 pt-4 border-t border-[#251f38] bg-[#120e1e] p-3 rounded-xl border border-[#231d34] ${isMobileExpanded ? 'block' : 'hidden lg:block'}`}>
           <h4 className="text-[10px] font-mono uppercase tracking-wider text-[#827899] font-bold mb-2">
             RÉSUMÉ DU SYSTÈME
           </h4>
