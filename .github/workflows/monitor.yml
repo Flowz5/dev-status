@@ -1,0 +1,39 @@
+name: DevStatus Health Monitor
+
+on:
+  schedule:
+    # Exécution automatique toutes les 15 minutes (24h/24, 7j/7)
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permet le déclenchement manuel depuis l'interface GitHub
+
+jobs:
+  ping-services:
+    name: Ping Services & Check Health
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Configurer l'environnement Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Installer les dépendances
+        run: npm ci || npm install
+
+      - name: Lancer le Worker de Ping
+        run: node scripts/ping-worker.mjs
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+
+      - name: Archiver le rapport de santé
+        uses: actions/upload-artifact@v4
+        with:
+          name: devstatus-health-report
+          path: status-cache.json
+          retention-days: 7
