@@ -4,49 +4,38 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 font-sans;
+    @apply bg-[#0e0c16] text-[#e6e2f0] font-sans antialiased selection:bg-[#f97356] selection:text-white;
   }
 }
 
-/* Scrollbar personnalisée sombre */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #0e0c16;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #251f38;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #393155;
 }
 
-/* Animations et reflets */
-@keyframes glow {
-  0%, 100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-}
-
+/* Beacon glow styles */
 .status-beacon-operational {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
 }
 
 .status-beacon-degraded {
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
 }
 
 .status-beacon-down {
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
 }

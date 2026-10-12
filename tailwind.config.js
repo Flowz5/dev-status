@@ -16,9 +16,24 @@ export default {
           700: '#4338ca',
         },
         status: {
-          operational: '#10b981',
+          operational: '#34d399',
           degraded: '#f59e0b',
           down: '#ef4444',
+        },
+        vanguard: {
+          bg: '#0e0c16',
+          card: '#181426',
+          cardHover: '#1f1a30',
+          border: '#2a233e',
+          coral: '#f97356',
+          coralDark: '#7c3327',
+          coralMuted: '#2b1b22',
+          cream: '#fde68a',
+          peach: '#fba379',
+          lavender: '#c084fc',
+          purple: '#818cf8',
+          textMuted: '#948ca5',
+          textDim: '#645c77',
         }
       },
       fontFamily: {
