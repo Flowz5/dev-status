@@ -7,6 +7,7 @@ import { VanguardTechMixBar } from './components/vanguard/VanguardTechMixBar';
 import { VanguardHealthPipeline } from './components/vanguard/VanguardHealthPipeline';
 import { VanguardGaugeIndex } from './components/vanguard/VanguardGaugeIndex';
 import { VanguardSlaTargets } from './components/vanguard/VanguardSlaTargets';
+import { AuthModal } from './components/vanguard/AuthModal';
 import { ServiceCard } from './components/ServiceCard';
 import { AddServiceModal } from './components/AddServiceModal';
 import { EditServiceModal } from './components/EditServiceModal';
@@ -20,6 +21,7 @@ import {
   pingAllServices,
   saveLocalServices
 } from './firebase/services';
+import { subscribeToAuthState, logoutUser, isUserAdmin } from './firebase/auth';
 import { db } from './firebase/config';
 import { INITIAL_SERVICES } from './data/initialServices';
 import { RefreshCw, Plus } from 'lucide-react';
@@ -32,10 +34,23 @@ export default function App() {
   const [refreshProgress, setRefreshProgress] = useState(null);
   const [lastGlobalCheck, setLastGlobalCheck] = useState(() => new Date().toISOString());
 
+  // Authentification
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [filterOnlyMine, setFilterOnlyMine] = useState(false);
+
   // Modales
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
+
+  // Écoute de l'état d'authentification
+  useEffect(() => {
+    const unsubAuth = subscribeToAuthState((user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubAuth();
+  }, []);
 
   // Souscription aux services (Firestore ou Local)
   useEffect(() => {
@@ -47,12 +62,17 @@ export default function App() {
     };
   }, []);
 
+  // Filtrage : Tous ou Mes Projets
+  const displayedServices = filterOnlyMine && currentUser
+    ? services.filter(s => s.ownerEmail === currentUser.email || s.userId === currentUser.uid)
+    : services;
+
   // Rafraîchissement global
   const handleRefreshAll = useCallback(async () => {
-    if (isRefreshing || services.length === 0) return;
+    if (isRefreshing || displayedServices.length === 0) return;
     setIsRefreshing(true);
     try {
-      await pingAllServices(services, (name, current, total) => {
+      await pingAllServices(displayedServices, (name, current, total) => {
         setRefreshProgress(`Vérification de ${name} (${current}/${total})...`);
       });
       setLastGlobalCheck(new Date().toISOString());
@@ -62,7 +82,7 @@ export default function App() {
       setIsRefreshing(false);
       setRefreshProgress(null);
     }
-  }, [isRefreshing, services]);
+  }, [isRefreshing, displayedServices]);
 
   // Ping individuel d'un service
   const handlePingSingle = async (service) => {
@@ -70,9 +90,14 @@ export default function App() {
     setLastGlobalCheck(new Date().toISOString());
   };
 
-  // Ajout de service
+  // Ajout de service (associé au compte utilisateur connecté)
   const handleAddService = async (serviceData) => {
-    await addService(serviceData);
+    const enrichedService = {
+      ...serviceData,
+      ownerEmail: currentUser ? currentUser.email : 'le.dupont.pro@gmail.com',
+      userId: currentUser ? currentUser.uid : null
+    };
+    await addService(enrichedService);
   };
 
   // Mise à jour de service
@@ -92,14 +117,14 @@ export default function App() {
     setServices(INITIAL_SERVICES);
   };
 
-  const selectedService = services.find(s => s.id === selectedServiceId) || null;
+  const selectedService = displayedServices.find(s => s.id === selectedServiceId) || null;
 
   return (
     <div className="min-h-screen bg-[#0e0c16] text-[#e6e2f0] flex flex-col font-sans selection:bg-[#f97356] selection:text-white">
       
-      {/* 1. Navbar en Français */}
+      {/* 1. Navbar avec Authentification */}
       <VanguardNavbar
-        services={services}
+        services={displayedServices}
         isRefreshing={isRefreshing}
         onRefreshAll={handleRefreshAll}
         onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -107,6 +132,9 @@ export default function App() {
         isAdminMode={isAdminMode}
         setIsAdminMode={setIsAdminMode}
         lastGlobalCheck={lastGlobalCheck}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onLogout={logoutUser}
       />
 
       {/* Bannière de progression pendant le ping */}
@@ -122,12 +150,15 @@ export default function App() {
         
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           
-          {/* A. Sidebar Gauche : Arborescence des projets & Résumé */}
+          {/* A. Sidebar Gauche : Arborescence des projets & Filtre compte */}
           <VanguardSidebar
-            services={services}
+            services={displayedServices}
             selectedServiceId={selectedServiceId}
             onSelectService={setSelectedServiceId}
             lastGlobalCheck={lastGlobalCheck}
+            currentUser={currentUser}
+            filterOnlyMine={filterOnlyMine}
+            setFilterOnlyMine={setFilterOnlyMine}
           />
 
           {/* B. Corps Principal du Dashboard */}
@@ -136,47 +167,50 @@ export default function App() {
             {/* Haut : Titre du projet / Hub + 3 Grands Chiffres KPIs */}
             <VanguardHeaderKpis
               selectedService={selectedService}
-              services={services}
+              services={displayedServices}
               onPingSelected={handlePingSingle}
             />
 
             {/* Milieu : 2 Grandes Cartes (Courbe de Latence & Répartition Vercel/Firebase) */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <VanguardSplineChart
-                services={services}
+                services={displayedServices}
                 selectedService={selectedService}
               />
               <VanguardTechMixBar
-                services={services}
+                services={displayedServices}
               />
             </div>
 
             {/* Bas : 3 Colonnes Claires (État par Catégorie, Jauge de Santé, Objectifs SLA) */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <VanguardHealthPipeline
-                services={services}
+                services={displayedServices}
               />
               <VanguardGaugeIndex
-                services={services}
+                services={displayedServices}
               />
               <VanguardSlaTargets
-                services={services}
+                services={displayedServices}
               />
             </div>
 
-            {/* Section Détaillée : Les cartes des 4 projets avec les barres de 30 vérifications */}
+            {/* Section Détaillée : Les cartes des projets avec les barres de 30 vérifications */}
             <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#251f38]">
                 <div>
                   <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
-                    {selectedService ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)"}
+                    {selectedService 
+                      ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` 
+                      : (filterOnlyMine ? "MES PROJETS SURVEILLÉS (30 DERNIERS CHECKS)" : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)")
+                    }
                   </h3>
                   <p className="text-xs text-[#7e7592] font-mono mt-0.5">
                     Pastilles de statut, temps de réponse en millisecondes et date du dernier contrôle
                   </p>
                 </div>
 
-                {isAdminMode && (
+                {(isAdminMode || currentUser) && (
                   <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm"
@@ -189,11 +223,11 @@ export default function App() {
 
               {/* Cartes individuelles des projets */}
               <div className="grid grid-cols-1 gap-4">
-                {(selectedService ? [selectedService] : services).map((service) => (
+                {(selectedService ? [selectedService] : displayedServices).map((service) => (
                   <ServiceCard
                     key={service.id}
                     service={service}
-                    isAdminMode={isAdminMode}
+                    isAdminMode={isAdminMode || (currentUser && (isUserAdmin(currentUser) || service.ownerEmail === currentUser.email))}
                     onPing={handlePingSingle}
                     onEdit={(s) => setEditingService(s)}
                     onDelete={handleDeleteService}
@@ -231,13 +265,21 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Modales */}
+      {/* Modale d'Authentification */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={(user) => setCurrentUser(user)}
+      />
+
+      {/* Modale d'Ajout d'Application */}
       <AddServiceModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddService={handleAddService}
       />
 
+      {/* Modale d'Édition */}
       <EditServiceModal
         isOpen={!!editingService}
         service={editingService}
@@ -246,6 +288,7 @@ export default function App() {
         onDeleteService={handleDeleteService}
       />
 
+      {/* Modale des Paramètres */}
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}

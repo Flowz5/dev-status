@@ -6,13 +6,14 @@ export const INITIAL_SERVICES = [
     url: 'https://dashboard-devs-2d9f.vercel.app/',
     category: 'Vercel',
     tags: ['Frontend', 'Vercel', 'Production'],
-    status: 'operational', // 'operational' | 'degraded' | 'down'
+    status: 'operational',
     statusCode: 200,
     responseTime: 95,
     lastCheck: new Date().toISOString(),
     uptimePercentage: 99.98,
     active: true,
     degradedThresholdMs: 800,
+    ownerEmail: 'le.dupont.pro@gmail.com',
     description: "Portail principal et dashboard des développeurs de l'équipe",
     history: generateMockHistory(95, 200)
   },
@@ -29,6 +30,7 @@ export const INITIAL_SERVICES = [
     uptimePercentage: 100.0,
     active: true,
     degradedThresholdMs: 800,
+    ownerEmail: 'le.dupont.pro@gmail.com',
     description: "Application de curation et partage de veille technologique",
     history: generateMockHistory(110, 200)
   },
@@ -45,6 +47,7 @@ export const INITIAL_SERVICES = [
     uptimePercentage: 99.85,
     active: true,
     degradedThresholdMs: 800,
+    ownerEmail: 'le.dupont.pro@gmail.com',
     description: "Outil de prospection et gestion des opportunités commerciales",
     history: generateMockHistory(130, 200)
   },
@@ -61,18 +64,18 @@ export const INITIAL_SERVICES = [
     uptimePercentage: 100.0,
     active: true,
     degradedThresholdMs: 800,
+    ownerEmail: 'le.dupont.pro@gmail.com',
     description: "Prise de notes collaborative et gestion de connaissances",
     history: generateMockHistory(105, 200)
   }
 ];
 
-// Génère un historique réaliste de 30 vérifications récentes pour initialiser les barres de statut
+// Génère un historique réaliste de 30 vérifications récentes
 function generateMockHistory(baseLatency, baseStatus) {
   const history = [];
   const now = Date.now();
   for (let i = 29; i >= 0; i--) {
     const timestamp = new Date(now - i * 15 * 60 * 1000).toISOString();
-    // Variation naturelle de latence (+/- 25%)
     const variation = Math.floor((Math.random() - 0.5) * (baseLatency * 0.4));
     const latency = Math.max(20, baseLatency + variation);
     history.push({
