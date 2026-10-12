@@ -18,37 +18,37 @@ export function VanguardGaugeIndex({ services }) {
         </span>
       </div>
 
-      {/* Jauge Semi-Circulaire (Half-Donut) */}
+      {/* Jauge Semi-Circulaire avec texte parfaitement positionné sans chevauchement */}
       <div className="flex flex-col items-center justify-center my-2">
-        <div className="relative w-40 h-24 flex items-end justify-center overflow-hidden">
+        <div className="relative w-44 h-28 flex items-center justify-center">
           {/* SVG Semi-Circle Arc */}
-          <svg viewBox="0 0 100 55" className="w-full h-full">
+          <svg viewBox="0 0 100 58" className="w-full h-full">
             {/* Arc d'arrière-plan */}
             <path
-              d="M 10 50 A 40 40 0 0 1 90 50"
+              d="M 12 52 A 38 38 0 0 1 88 52"
               fill="none"
-              stroke="#261f36"
+              stroke="#251e36"
               strokeWidth="9"
               strokeLinecap="round"
             />
             {/* Arc actif Corail */}
             <path
-              d="M 10 50 A 40 40 0 0 1 90 50"
+              d="M 12 52 A 38 38 0 0 1 88 52"
               fill="none"
               stroke="#f97356"
               strokeWidth="9"
-              strokeDasharray="125.6"
-              strokeDashoffset="6"
+              strokeDasharray="119.4"
+              strokeDashoffset="2"
               strokeLinecap="round"
             />
           </svg>
 
-          {/* Score central */}
-          <div className="absolute bottom-0 text-center">
-            <span className="text-3xl font-black font-mono text-white tracking-tight">
+          {/* Score central et étiquette nettement séparés */}
+          <div className="absolute top-10 flex flex-col items-center justify-center text-center">
+            <span className="text-3xl font-black font-mono text-white tracking-tight leading-none">
               {avgUptime}
             </span>
-            <span className="block text-[10px] font-mono text-[#8a7f9e]">
+            <span className="text-[10px] font-mono text-[#9e94b5] uppercase tracking-wider mt-1.5 font-semibold">
               Score de santé / 100
             </span>
           </div>
@@ -56,7 +56,7 @@ export function VanguardGaugeIndex({ services }) {
       </div>
 
       {/* 3 Barres de sous-métriques en Français */}
-      <div className="space-y-3 mt-3">
+      <div className="space-y-3 mt-2">
         {/* Barre 1 */}
         <div>
           <div className="flex items-center justify-between text-xs font-mono mb-1">
@@ -92,7 +92,7 @@ export function VanguardGaugeIndex({ services }) {
       </div>
 
       {/* Footer explication */}
-      <p className="text-[10px] font-mono text-[#625977] mt-4 pt-2 border-t border-[#231d34]">
+      <p className="text-[10px] font-mono text-[#625977] mt-3 pt-2 border-t border-[#231d34]">
         Indice basé sur la disponibilité et la latence moyenne de vos 4 projets.
       </p>
 

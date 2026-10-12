@@ -40,23 +40,23 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-[#161224] border border-[#251f38] rounded-2xl w-full max-w-lg p-6 shadow-2xl relative font-sans text-[#e6e2f0]">
         
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        {/* Header Vanguard */}
+        <div className="flex items-center justify-between pb-4 border-b border-[#251f38]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-[#2b1b22] text-[#f97356] border border-[#522931]">
               <Edit3 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Modifier le Service</h3>
-              <p className="text-xs text-slate-400">{service.name}</p>
+              <h3 className="text-base font-bold text-white font-sans">Modifier le Projet</h3>
+              <p className="text-xs text-[#8f85a8] font-mono">{service.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-[#8f85a8] hover:text-white hover:bg-[#1f1a30] transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -66,7 +66,7 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1.5 font-mono">
               Nom du projet *
             </label>
             <input
@@ -74,12 +74,12 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#f97356] transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1.5 font-mono">
               URL *
             </label>
             <input
@@ -87,19 +87,19 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
               required
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#f97356] transition"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                Plateforme / Catégorie
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1.5 font-mono">
+                Plateforme / Environnement
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
+                className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#f97356] font-mono transition"
               >
                 <option value="Vercel">Vercel</option>
                 <option value="Firebase">Firebase</option>
@@ -109,8 +109,8 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                Seuil Dégradation (ms)
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1.5 font-mono">
+                Seuil d'alerte (ms)
               </label>
               <input
                 type="number"
@@ -118,20 +118,20 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
                 step="50"
                 value={formData.degradedThresholdMs}
                 onChange={(e) => setFormData({ ...formData, degradedThresholdMs: Number(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-indigo-500 transition"
+                className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#f97356] transition"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1.5 font-mono">
               Description
             </label>
             <textarea
               rows="2"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3.5 py-2 text-xs text-white placeholder-[#5b5270] focus:outline-none focus:border-[#f97356] transition"
             />
           </div>
 
@@ -141,21 +141,21 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
               id="activeCheckbox"
               checked={formData.active}
               onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-              className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-950 border-slate-800"
+              className="w-4 h-4 rounded text-[#f97356] focus:ring-[#f97356] bg-[#100d1c] border-[#251f38]"
             />
-            <label htmlFor="activeCheckbox" className="text-sm text-slate-300">
-              Service actif dans le monitoring périodique
+            <label htmlFor="activeCheckbox" className="text-xs font-mono text-[#b0a5c7]">
+              Actif dans la surveillance périodique
             </label>
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-[#251f38]">
             <button
               type="button"
               onClick={handleDelete}
-              className="px-3.5 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-[#ef4444] hover:bg-[#381a1f] border border-[#59222c] transition flex items-center gap-1.5"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
               <span>Supprimer</span>
             </button>
 
@@ -163,15 +163,15 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdateService, on
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="px-4 py-2 rounded-xl text-xs font-mono text-[#8f85a8] hover:text-white hover:bg-[#1f1a30] transition"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 transition flex items-center gap-2"
+                className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-[#f97356] hover:bg-[#ff8469] text-white shadow-md shadow-[#f97356]/20 transition flex items-center gap-2"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-3.5 h-3.5" />
                 <span>Enregistrer</span>
               </button>
             </div>

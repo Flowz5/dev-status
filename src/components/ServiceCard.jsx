@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, RefreshCw, Trash2, Edit3, ArrowUpRight, CheckCircle2, AlertTriangle, XCircle, Clock, Zap } from 'lucide-react';
+import { ExternalLink, RefreshCw, Trash2, Edit3, CheckCircle2, AlertTriangle, XCircle, Clock, Zap } from 'lucide-react';
 
 export function ServiceCard({
   service,
@@ -20,74 +20,72 @@ export function ServiceCard({
     }
   };
 
-  // Détermination des styles de statut
+  // Statuts & Couleurs dans le thème Vanguard
   const statusConfig = {
     operational: {
       label: 'Opérationnel',
-      badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-      dotClass: 'bg-emerald-400',
+      badgeClass: 'bg-[#132d20] text-[#34d399] border-[#1d4c36]',
+      dotClass: 'bg-[#34d399]',
       icon: CheckCircle2,
-      borderClass: 'hover:border-emerald-500/30'
+      borderClass: 'hover:border-[#34d399]/40'
     },
     degraded: {
       label: 'Ralenti',
-      badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-      dotClass: 'bg-amber-400',
+      badgeClass: 'bg-[#3a3219] text-[#fde68a] border-[#5a4d25]',
+      dotClass: 'bg-[#fde68a]',
       icon: AlertTriangle,
-      borderClass: 'hover:border-amber-500/30'
+      borderClass: 'hover:border-[#fde68a]/40'
     },
     down: {
       label: 'Hors Ligne',
-      badgeClass: 'bg-red-500/10 text-red-400 border-red-500/20',
-      dotClass: 'bg-red-400',
+      badgeClass: 'bg-[#381a1f] text-[#ef4444] border-[#59222c]',
+      dotClass: 'bg-[#ef4444]',
       icon: XCircle,
-      borderClass: 'hover:border-red-500/30'
+      borderClass: 'hover:border-[#ef4444]/40'
     }
   };
 
   const currentStatus = statusConfig[service.status] || statusConfig.operational;
   const StatusIcon = currentStatus.icon;
 
-  // Catégorie badges
+  // Catégorie badges style Vanguard
   const categoryColors = {
-    Vercel: 'bg-black text-slate-100 border-slate-700',
-    Firebase: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    'API Backend': 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    Autre: 'bg-slate-800 text-slate-300 border-slate-700'
+    Vercel: 'bg-[#1f1a30] text-[#f97356] border-[#382638]',
+    Firebase: 'bg-[#292218] text-[#fde68a] border-[#473922]',
+    'API Backend': 'bg-[#201a35] text-[#c084fc] border-[#3c2a63]',
+    Autre: 'bg-[#1a162b] text-[#9d92b5] border-[#251f38]'
   };
 
   const categoryBadge = categoryColors[service.category] || categoryColors.Autre;
 
   // Historique des 30 dernières vérifications
   const history = service.history || [];
-  // Remplir à 30 barres si moins de 30 vérifications
   const paddedHistory = [...Array(Math.max(0, 30 - history.length)).fill(null), ...history].slice(-30);
 
-  // Formattage date dernier check
   const lastCheckText = service.lastCheck 
     ? new Date(service.lastCheck).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    : 'Jamais';
+    : 'À l\'instant';
 
   return (
-    <div className={`bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 sm:p-6 backdrop-blur-sm transition-all duration-200 group ${currentStatus.borderClass} shadow-lg shadow-black/20`}>
+    <div className={`bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-200 group ${currentStatus.borderClass}`}>
       
       {/* En-tête de la carte */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center flex-shrink-0 text-slate-300 group-hover:text-white transition">
-            <StatusIcon className={`w-5 h-5 ${service.status === 'operational' ? 'text-emerald-400' : service.status === 'degraded' ? 'text-amber-400' : 'text-red-400'}`} />
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#1b162b] border border-[#251f38] flex items-center justify-center flex-shrink-0 text-white group-hover:border-[#382e52] transition">
+            <StatusIcon className={`w-5 h-5 ${service.status === 'operational' ? 'text-[#34d399]' : service.status === 'degraded' ? 'text-[#fde68a]' : 'text-[#ef4444]'}`} />
           </div>
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-bold text-white tracking-tight">
+              <h3 className="text-base font-bold text-white tracking-tight font-sans">
                 {service.name}
               </h3>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${categoryBadge}`}>
+              <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md border ${categoryBadge}`}>
                 {service.category || 'App'}
               </span>
-              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${currentStatus.badgeClass}`}>
+              <span className={`text-xs font-mono font-semibold px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${currentStatus.badgeClass}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${currentStatus.dotClass} animate-pulse`} />
                 {currentStatus.label}
               </span>
@@ -98,7 +96,7 @@ export function ServiceCard({
                 href={service.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-slate-400 hover:text-indigo-400 transition flex items-center gap-1 truncate max-w-[280px] sm:max-w-md font-mono"
+                className="text-xs text-[#8f85a8] hover:text-[#f97356] transition flex items-center gap-1 truncate max-w-[280px] sm:max-w-md font-mono"
               >
                 <span>{service.url}</span>
                 <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-70" />
@@ -109,16 +107,16 @@ export function ServiceCard({
 
         {/* Métriques instantanées (Code HTTP & Latence) */}
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-mono">
-            <span className="text-slate-400">HTTP</span>
-            <span className={`font-bold ${service.statusCode >= 200 && service.statusCode < 400 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#100d1c] border border-[#231d34] text-xs font-mono">
+            <span className="text-[#7e7494]">HTTP</span>
+            <span className={`font-bold ${service.statusCode >= 200 && service.statusCode < 400 ? 'text-[#34d399]' : 'text-[#ef4444]'}`}>
               {service.statusCode || 200}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-mono">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span className={`font-bold ${service.responseTime < 300 ? 'text-emerald-400' : service.responseTime < 800 ? 'text-amber-400' : 'text-red-400'}`}>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#100d1c] border border-[#231d34] text-xs font-mono">
+            <Zap className="w-3.5 h-3.5 text-[#f97356]" />
+            <span className="font-bold text-[#f97356]">
               {service.responseTime ? `${service.responseTime} ms` : '—'}
             </span>
           </div>
@@ -127,25 +125,25 @@ export function ServiceCard({
           <button
             onClick={handlePing}
             disabled={isPinging}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/70 transition disabled:opacity-50"
+            className="p-2 rounded-xl bg-[#1b162b] hover:bg-[#251f38] text-[#a599bf] hover:text-white border border-[#251f38] transition disabled:opacity-50"
             title="Tester immédiatement ce service"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isPinging ? 'animate-spin text-emerald-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isPinging ? 'animate-spin text-[#f97356]' : ''}`} />
           </button>
 
           {/* Actions d'administration */}
           {isAdminMode && (
-            <div className="flex items-center gap-1 border-l border-slate-800 pl-2">
+            <div className="flex items-center gap-1 border-l border-[#251f38] pl-2">
               <button
                 onClick={() => onEdit(service)}
-                className="p-2 rounded-xl bg-slate-800/80 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-400 border border-slate-700/70 transition"
+                className="p-2 rounded-xl bg-[#1b162b] hover:bg-[#311d24] text-[#a599bf] hover:text-[#f97356] border border-[#251f38] transition"
                 title="Modifier"
               >
                 <Edit3 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(service.id)}
-                className="p-2 rounded-xl bg-slate-800/80 hover:bg-red-600/20 text-slate-300 hover:text-red-400 border border-slate-700/70 transition"
+                className="p-2 rounded-xl bg-[#1b162b] hover:bg-[#381a1f] text-[#a599bf] hover:text-[#ef4444] border border-[#251f38] transition"
                 title="Supprimer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -158,45 +156,46 @@ export function ServiceCard({
 
       {/* Description du service si présente */}
       {service.description && (
-        <p className="text-xs text-slate-400 mb-4 line-clamp-1">
+        <p className="text-xs text-[#8f85a8] mb-4 font-sans line-clamp-1">
           {service.description}
         </p>
       )}
 
-      {/* Section Uptime Timeline (30 vérifications récentes) */}
-      <div className="mt-4 pt-4 border-t border-slate-800/60">
+      {/* Section Uptime Timeline (30 vérifications récentes) dans le thème Vanguard */}
+      <div className="mt-4 pt-4 border-t border-[#231d34]">
         
-        <div className="flex items-center justify-between text-xs mb-2">
+        <div className="flex items-center justify-between text-xs mb-2 font-mono">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium">Historique de disponibilité</span>
-            <span className="text-emerald-400 font-semibold font-mono">
-              {service.uptimePercentage || 99.9}% uptime
+            <span className="text-[#8f85a8]">Disponibilité récente</span>
+            <span className="text-[#f97356] font-bold">
+              {service.uptimePercentage || 100}% uptime
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+          <div className="flex items-center gap-1 text-[11px] text-[#716885]">
             <Clock className="w-3 h-3" />
-            <span>Dernier check : {lastCheckText}</span>
+            <span>Dernier contrôle : {lastCheckText}</span>
           </div>
         </div>
 
-        {/* Barre de 30 segments interactifs */}
+        {/* Barre de 30 segments dans le style Vanguard */}
         <div className="relative">
-          <div className="grid grid-cols-30 gap-1 h-8 sm:h-9 items-end bg-slate-950/40 p-1.5 rounded-xl border border-slate-800/60">
+          <div className="grid grid-cols-30 gap-1 h-7 sm:h-8 items-end bg-[#100d1c] p-1.5 rounded-xl border border-[#231d34]">
             {paddedHistory.map((item, idx) => {
               if (!item) {
                 return (
                   <div
                     key={idx}
-                    className="h-full rounded-sm bg-slate-800/40"
-                    title="Aucune donnée"
+                    className="h-full rounded-sm bg-[#1e182f]"
+                    title="En attente de données"
                   />
                 );
               }
 
-              let colorClass = 'bg-emerald-500 hover:bg-emerald-400';
-              if (item.status === 'down') colorClass = 'bg-red-500 hover:bg-red-400';
-              else if (item.status === 'degraded') colorClass = 'bg-amber-500 hover:bg-amber-400';
+              // Couleurs Vanguard pour les barres
+              let colorClass = 'bg-[#34d399] hover:bg-[#4ade80]';
+              if (item.status === 'down') colorClass = 'bg-[#ef4444] hover:bg-[#f87171]';
+              else if (item.status === 'degraded') colorClass = 'bg-[#fde68a] hover:bg-[#fef08a]';
 
               return (
                 <div
@@ -211,10 +210,10 @@ export function ServiceCard({
 
           {/* Tooltip interactif au survol d'une barre */}
           {hoveredCheck && (
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-xl pointer-events-none flex items-center gap-3 z-20 whitespace-nowrap">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#120e1e] border border-[#392d4f] text-white text-xs px-3 py-1.5 rounded-lg shadow-2xl pointer-events-none flex items-center gap-3 z-20 whitespace-nowrap font-mono">
               <span>{new Date(hoveredCheck.timestamp).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-              <span className="font-mono text-emerald-400 font-bold">{hoveredCheck.responseTime} ms</span>
-              <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono ${hoveredCheck.statusCode === 200 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
+              <span className="text-[#f97356] font-bold">{hoveredCheck.responseTime} ms</span>
+              <span className={`px-1.5 py-0.2 rounded text-[10px] ${hoveredCheck.statusCode === 200 ? 'bg-[#132d20] text-[#34d399]' : 'bg-[#381a1f] text-[#ef4444]'}`}>
                 HTTP {hoveredCheck.statusCode}
               </span>
             </div>
@@ -222,17 +221,17 @@ export function ServiceCard({
         </div>
 
         {/* Légende sous la barre */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2 font-mono">
+        <div className="flex items-center justify-between text-[11px] text-[#716885] mt-2 font-mono">
           <span>Il y a 30 contrôles</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Opérationnel
+              <span className="w-2 h-2 rounded-full bg-[#34d399]" /> Opérationnel
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> Dégradé (&gt;{service.degradedThresholdMs || 800}ms)
+              <span className="w-2 h-2 rounded-full bg-[#fde68a]" /> Ralenti (&gt;{service.degradedThresholdMs || 800}ms)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-500" /> Hors ligne
+              <span className="w-2 h-2 rounded-full bg-[#ef4444]" /> Hors ligne
             </span>
           </div>
           <span>Aujourd'hui</span>

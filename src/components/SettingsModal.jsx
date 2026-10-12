@@ -29,7 +29,7 @@ export function SettingsModal({ isOpen, onClose, firebaseConnected, onResetServi
     e.preventDefault();
     try {
       localStorage.setItem('devstatus_firebase_config', JSON.stringify(configValues));
-      setMessage({ type: 'success', text: 'Configuration Firebase enregistrée ! Rechargez la page pour appliquer.' });
+      setMessage({ type: 'success', text: 'Configuration enregistrée ! Rechargez la page pour appliquer.' });
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     }
@@ -68,92 +68,92 @@ export function SettingsModal({ isOpen, onClose, firebaseConnected, onResetServi
   };
 
   const handleResetToDefaults = () => {
-    if (window.confirm("Voulez-vous réinitialiser tous les services avec les 4 projets par défaut ?")) {
+    if (window.confirm("Voulez-vous réinitialiser tous les services avec les 4 projets d'origine ?")) {
       onResetServices();
       setMessage({ type: 'success', text: 'Services réinitialisés aux 4 projets originaux.' });
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-[#161224] border border-[#251f38] rounded-2xl w-full max-w-xl p-6 shadow-2xl relative font-sans text-[#e6e2f0]">
         
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        {/* Header dans le thème Vanguard */}
+        <div className="flex items-center justify-between pb-4 border-b border-[#251f38]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-[#2b1b22] text-[#f97356] border border-[#522931]">
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Paramètres & Synchronisation</h3>
-              <p className="text-xs text-slate-400">Configuration Firestore et gestion des données</p>
+              <h3 className="text-base font-bold text-white font-sans">Paramètres & Synchronisation</h3>
+              <p className="text-xs text-[#8f85a8] font-mono">Connexion Cloud Firestore & Sauvegardes</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-[#8f85a8] hover:text-white hover:bg-[#1f1a30] transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Feedback message */}
+        {/* Message d'état */}
         {message && (
-          <div className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2 ${
+          <div className={`mt-4 p-3 rounded-xl border text-xs font-mono flex items-center gap-2 ${
             message.type === 'success' 
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
-              : 'bg-red-500/10 border-red-500/30 text-red-300'
+              ? 'bg-[#132d20] border-[#1d4c36] text-[#34d399]' 
+              : 'bg-[#381a1f] border-[#59222c] text-[#ef4444]'
           }`}>
             {message.type === 'success' ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
             <span>{message.text}</span>
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2 mt-4 border-b border-slate-800 pb-2">
+        {/* Onglets style Vanguard */}
+        <div className="flex items-center gap-2 mt-4 border-b border-[#251f38] pb-2 font-mono text-xs">
           <button
             onClick={() => setActiveTab('firebase')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition ${
               activeTab === 'firebase'
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#f97356] text-white shadow-sm'
+                : 'text-[#8f85a8] hover:text-white'
             }`}
           >
             Firebase Firestore
           </button>
           <button
             onClick={() => setActiveTab('data')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition ${
               activeTab === 'data'
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#f97356] text-white shadow-sm'
+                : 'text-[#8f85a8] hover:text-white'
             }`}
           >
             Sauvegarde & Données
           </button>
         </div>
 
-        {/* Tab 1: Firebase Firestore */}
+        {/* Onglet 1 : Firebase */}
         {activeTab === 'firebase' && (
-          <form onSubmit={handleSaveFirebase} className="mt-4 space-y-3">
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5">
-              <Database className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <form onSubmit={handleSaveFirebase} className="mt-4 space-y-3 font-mono text-xs">
+            <div className="p-3 rounded-xl bg-[#100d1c] border border-[#251f38] text-xs text-[#b0a5c7] flex items-start gap-2.5">
+              <Database className="w-4 h-4 text-[#fde68a] flex-shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white">Statut actuel : </strong>
+                <strong className="text-white font-sans">Statut actuel : </strong>
                 {firebaseConnected ? (
-                  <span className="text-emerald-400 font-medium">Connecté à Cloud Firestore</span>
+                  <span className="text-[#34d399] font-bold">Connecté à Cloud Firestore</span>
                 ) : (
-                  <span className="text-amber-400 font-medium">Mode Local / Démo interactif</span>
+                  <span className="text-[#fde68a] font-bold">Mode Local / Démo interactif</span>
                 )}
-                <p className="text-slate-400 mt-1">
-                  Vous pouvez entrer vos clés Firebase ici ou dans un fichier <code className="text-indigo-400">.env</code>.
+                <p className="text-[#7e7494] mt-1 font-sans text-[11px]">
+                  Vos clés sont synchronisées via le fichier <code className="text-[#f97356]">.env</code> ou via ce formulaire.
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1">
                   API Key
                 </label>
                 <input
@@ -161,54 +161,54 @@ export function SettingsModal({ isOpen, onClose, firebaseConnected, onResetServi
                   placeholder="AIzaSy..."
                   value={configValues.apiKey}
                   onChange={(e) => setConfigValues({ ...configValues, apiKey: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#f97356]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1">
                   Project ID
                 </label>
                 <input
                   type="text"
-                  placeholder="mon-projet-firebase"
+                  placeholder="dev-status-23bde"
                   value={configValues.projectId}
                   onChange={(e) => setConfigValues({ ...configValues, projectId: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#f97356]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1">
                   Auth Domain
                 </label>
                 <input
                   type="text"
-                  placeholder="mon-projet.firebaseapp.com"
+                  placeholder="dev-status-23bde.firebaseapp.com"
                   value={configValues.authDomain}
                   onChange={(e) => setConfigValues({ ...configValues, authDomain: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#f97356]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#8f85a8] mb-1">
                   App ID
                 </label>
                 <input
                   type="text"
-                  placeholder="1:123456789:web:abcdef"
+                  placeholder="1:174259713194:web:d3969a..."
                   value={configValues.appId}
                   onChange={(e) => setConfigValues({ ...configValues, appId: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#100d1c] border border-[#251f38] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#f97356]"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#251f38]">
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl text-xs font-bold font-mono bg-[#f97356] hover:bg-[#ff8469] text-white transition flex items-center gap-1.5 shadow-md shadow-[#f97356]/20"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Enregistrer & Appliquer</span>
@@ -217,30 +217,30 @@ export function SettingsModal({ isOpen, onClose, firebaseConnected, onResetServi
           </form>
         )}
 
-        {/* Tab 2: Gestion des données */}
+        {/* Onglet 2 : Données */}
         {activeTab === 'data' && (
-          <div className="mt-4 space-y-4">
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-              <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-1">
-                Sauvegarde & Restauration
+          <div className="mt-4 space-y-4 font-mono text-xs">
+            <div className="p-3 rounded-xl bg-[#100d1c] border border-[#251f38]">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1 font-sans">
+                Export & Import JSON
               </h4>
-              <p className="text-xs text-slate-400 mb-3">
-                Exportez ou restaurez l'intégralité de la configuration de vos services sous forme de fichier JSON.
+              <p className="text-xs text-[#8f85a8] mb-3 font-sans">
+                Téléchargez la liste de vos projets configurés ou restaurez-la d'un simple clic.
               </p>
               
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleExportData}
-                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-xl bg-[#1b162b] hover:bg-[#251f38] text-xs font-medium text-white border border-[#251f38] transition flex items-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 text-[#f97356]" />
                   <span>Exporter (JSON)</span>
                 </button>
 
-                <label className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Importer un fichier JSON</span>
+                <label className="px-3 py-2 rounded-xl bg-[#1b162b] hover:bg-[#251f38] text-xs font-medium text-white border border-[#251f38] transition flex items-center gap-1.5 cursor-pointer">
+                  <Upload className="w-3.5 h-3.5 text-[#34d399]" />
+                  <span>Importer (JSON)</span>
                   <input
                     type="file"
                     accept=".json"
@@ -251,15 +251,15 @@ export function SettingsModal({ isOpen, onClose, firebaseConnected, onResetServi
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-[#100d1c] border border-[#251f38] flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-semibold text-white">Réinitialiser les services</h4>
-                <p className="text-xs text-slate-400">Recharger les 4 projets d'origine de l'équipe</p>
+                <h4 className="text-xs font-bold text-white font-sans">Réinitialiser les 4 projets</h4>
+                <p className="text-xs text-[#8f85a8] font-sans">Recharger la liste d'origine de l'équipe</p>
               </div>
               <button
                 type="button"
                 onClick={handleResetToDefaults}
-                className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-medium transition flex items-center gap-1.5"
+                className="px-3 py-2 rounded-xl bg-[#381a1f] hover:bg-[#482027] text-[#ef4444] border border-[#59222c] text-xs font-bold transition flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Réinitialiser</span>
