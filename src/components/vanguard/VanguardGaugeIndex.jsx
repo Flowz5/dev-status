@@ -6,6 +6,8 @@ export function VanguardGaugeIndex({ services }) {
   const avgUptime = (activeServices.reduce((acc, s) => acc + (s.uptimePercentage || 100), 0) / total).toFixed(1);
 
   const scoreNum = Math.min(100, Math.max(0, parseFloat(avgUptime) || 100));
+  // Affiche un entier propre quand c'est 100 (ex: 100 au lieu de 100.0) ou la décimale si nécessaire
+  const displayScore = scoreNum % 1 === 0 ? Math.round(scoreNum) : avgUptime;
   // Circonférence d'un demi-cercle de rayon 38 = PI * 38 ≈ 119.38
   const arcLength = 119.4;
   const strokeDashoffset = ((100 - scoreNum) / 100) * arcLength;
@@ -46,18 +48,18 @@ export function VanguardGaugeIndex({ services }) {
               strokeLinecap="round"
               className="transition-all duration-700 ease-out"
             />
-            {/* Grand chiffre vectoriel verrouillé au centre exact de l'arc */}
+            {/* Chiffre vectoriel proportionné, centré et aéré à l'intérieur de l'arc */}
             <text
               x="50"
-              y="48"
+              y="40"
               textAnchor="middle"
               fill="#ffffff"
-              fontSize="21"
+              fontSize="14"
               fontWeight="900"
               fontFamily="monospace"
               letterSpacing="-0.5"
             >
-              {avgUptime}
+              {displayScore}
             </text>
           </svg>
         </div>
