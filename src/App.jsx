@@ -7,7 +7,7 @@ import { VanguardTechMixBar } from './components/vanguard/VanguardTechMixBar';
 import { VanguardHealthPipeline } from './components/vanguard/VanguardHealthPipeline';
 import { VanguardGaugeIndex } from './components/vanguard/VanguardGaugeIndex';
 import { VanguardSlaTargets } from './components/vanguard/VanguardSlaTargets';
-import { AuthModal } from './components/vanguard/AuthModal';
+import { LoginPage } from './components/vanguard/LoginPage';
 import { ServiceCard } from './components/ServiceCard';
 import { AddServiceModal } from './components/AddServiceModal';
 import { EditServiceModal } from './components/EditServiceModal';
@@ -24,20 +24,18 @@ import {
 import { subscribeToAuthState, logoutUser, isUserAdmin } from './firebase/auth';
 import { db } from './firebase/config';
 import { INITIAL_SERVICES } from './data/initialServices';
-import { RefreshCw, Plus } from 'lucide-react';
+import { RefreshCw, Plus, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [services, setServices] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
-  const [isAdminMode, setIsAdminMode] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshProgress, setRefreshProgress] = useState(null);
   const [lastGlobalCheck, setLastGlobalCheck] = useState(() => new Date().toISOString());
 
-  // Authentification
+  // Authentification & Auth Wall
   const [currentUser, setCurrentUser] = useState(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [filterOnlyMine, setFilterOnlyMine] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   // Modales
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -48,24 +46,26 @@ export default function App() {
   useEffect(() => {
     const unsubAuth = subscribeToAuthState((user) => {
       setCurrentUser(user);
+      setIsAuthChecking(false);
     });
     return () => unsubAuth();
   }, []);
 
-  // Souscription aux services (Firestore ou Local)
+  // Souscription aux services strictement cloisonnés au compte connecté
   useEffect(() => {
-    const unsubscribe = subscribeToServices((data) => {
+    if (!currentUser) {
+      setServices([]);
+      return;
+    }
+    const unsubscribe = subscribeToServices(currentUser.email, (data) => {
       setServices(data || []);
     });
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, []);
+  }, [currentUser]);
 
-  // Filtrage : Tous ou Mes Projets
-  const displayedServices = filterOnlyMine && currentUser
-    ? services.filter(s => s.ownerEmail === currentUser.email || s.userId === currentUser.uid)
-    : services;
+  const displayedServices = services;
 
   // Rafraîchissement global
   const handleRefreshAll = useCallback(async () => {
@@ -92,49 +92,78 @@ export default function App() {
 
   // Ajout de service (associé au compte utilisateur connecté)
   const handleAddService = async (serviceData) => {
+    if (!currentUser) return;
     const enrichedService = {
       ...serviceData,
-      ownerEmail: currentUser ? currentUser.email : 'le.dupont.pro@gmail.com',
-      userId: currentUser ? currentUser.uid : null
+      ownerEmail: currentUser.email,
+      userId: currentUser.uid
     };
-    await addService(enrichedService);
+    await addService(enrichedService, currentUser.email);
   };
 
   // Mise à jour de service
   const handleUpdateService = async (id, updates) => {
-    await updateService(id, updates);
+    if (!currentUser) return;
+    await updateService(id, updates, currentUser.email);
   };
 
   // Suppression de service
   const handleDeleteService = async (id) => {
+    if (!currentUser) return;
     if (selectedServiceId === id) setSelectedServiceId(null);
-    await deleteService(id);
+    await deleteService(id, currentUser.email);
   };
 
-  // Réinitialiser les services aux 4 de départ
+  // Réinitialiser les services
   const handleResetServices = () => {
-    saveLocalServices(INITIAL_SERVICES);
-    setServices(INITIAL_SERVICES);
+    if (!currentUser) return;
+    if (isUserAdmin(currentUser)) {
+      saveLocalServices(INITIAL_SERVICES, currentUser.email);
+      setServices(INITIAL_SERVICES);
+    } else {
+      saveLocalServices([], currentUser.email);
+      setServices([]);
+    }
   };
 
   const selectedService = displayedServices.find(s => s.id === selectedServiceId) || null;
 
+  // 1. Écran de chargement initial (évite tout flash)
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-[#0e0c16] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f97356] to-[#d94f32] p-2 flex items-center justify-center animate-pulse shadow-lg shadow-[#f97356]/20">
+            <RefreshCw className="w-5 h-5 text-white animate-spin" />
+          </div>
+          <span className="font-mono text-xs text-[#8a7f9e]">Chargement de votre espace sécurisé...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Barrière d'authentification : si non connecté, afficher exclusivement la page de connexion
+  if (!currentUser) {
+    return <LoginPage onAuthSuccess={(user) => setCurrentUser(user)} />;
+  }
+
+  // 3. Tableau de bord après authentification
   return (
     <div className="min-h-screen bg-[#0e0c16] text-[#e6e2f0] flex flex-col font-sans selection:bg-[#f97356] selection:text-white">
       
-      {/* 1. Navbar avec Authentification */}
+      {/* Navbar avec statut utilisateur et actions */}
       <VanguardNavbar
         services={displayedServices}
         isRefreshing={isRefreshing}
         onRefreshAll={handleRefreshAll}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
-        isAdminMode={isAdminMode}
-        setIsAdminMode={setIsAdminMode}
-        lastGlobalCheck={lastGlobalCheck}
         currentUser={currentUser}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onLogout={logoutUser}
+        onLogout={async () => {
+          await logoutUser();
+          setCurrentUser(null);
+          setServices([]);
+        }}
       />
 
       {/* Bannière de progression pendant le ping */}
@@ -145,96 +174,120 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. Container Principal : Sidebar Gauche + Dashboard Central */}
+      {/* Container Principal : Sidebar Gauche + Dashboard Central */}
       <main className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8">
         
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           
-          {/* A. Sidebar Gauche : Arborescence des projets & Filtre compte */}
+          {/* A. Sidebar Gauche : Arborescence des projets */}
           <VanguardSidebar
             services={displayedServices}
             selectedServiceId={selectedServiceId}
             onSelectService={setSelectedServiceId}
             lastGlobalCheck={lastGlobalCheck}
             currentUser={currentUser}
-            filterOnlyMine={filterOnlyMine}
-            setFilterOnlyMine={setFilterOnlyMine}
           />
 
           {/* B. Corps Principal du Dashboard */}
           <div className="flex-1 w-full space-y-6">
             
-            {/* Haut : Titre du projet / Hub + 3 Grands Chiffres KPIs */}
-            <VanguardHeaderKpis
-              selectedService={selectedService}
-              services={displayedServices}
-              onPingSelected={handlePingSingle}
-            />
-
-            {/* Milieu : 2 Grandes Cartes (Courbe de Latence & Répartition Vercel/Firebase) */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <VanguardSplineChart
-                services={displayedServices}
-                selectedService={selectedService}
-              />
-              <VanguardTechMixBar
-                services={displayedServices}
-              />
-            </div>
-
-            {/* Bas : 3 Colonnes Claires (État par Catégorie, Jauge de Santé, Objectifs SLA) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              <VanguardHealthPipeline
-                services={displayedServices}
-              />
-              <VanguardGaugeIndex
-                services={displayedServices}
-              />
-              <VanguardSlaTargets
-                services={displayedServices}
-              />
-            </div>
-
-            {/* Section Détaillée : Les cartes des projets avec les barres de 30 vérifications */}
-            <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#251f38]">
-                <div>
-                  <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
-                    {selectedService 
-                      ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` 
-                      : (filterOnlyMine ? "MES PROJETS SURVEILLÉS (30 DERNIERS CHECKS)" : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)")
-                    }
+            {displayedServices.length === 0 ? (
+              /* État Vierge pour tout nouvel utilisateur */
+              <div className="bg-[#161224] border border-[#251f38] rounded-3xl p-8 sm:p-14 text-center shadow-2xl space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-[#231b38] border border-[#372b54] p-3 mx-auto flex items-center justify-center text-[#f97356] shadow-lg shadow-[#f97356]/10">
+                  <Plus className="w-8 h-8" />
+                </div>
+                <div className="max-w-md mx-auto">
+                  <h3 className="text-xl font-bold text-white font-sans">
+                    Votre tableau de bord est vierge
                   </h3>
-                  <p className="text-xs text-[#7e7592] font-mono mt-0.5">
-                    Pastilles de statut, temps de réponse en millisecondes et date du dernier contrôle
+                  <p className="text-xs font-mono text-[#8a7f9e] mt-2.5 leading-relaxed">
+                    Bienvenue <span className="text-[#fde68a]">{currentUser.email}</span> ! Vous n'avez encore aucun projet sous surveillance. Enregistrez votre première URL d'application ou d'API pour lancer le monitoring.
                   </p>
                 </div>
-
-                {(isAdminMode || currentUser) && (
+                <div>
                   <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-lg shadow-[#f97356]/20 cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Nouvelle URL</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Ajouter mon premier projet</span>
                   </button>
-                )}
+                </div>
               </div>
+            ) : (
+              <>
+                {/* Haut : Titre du projet / Hub + 3 Grands Chiffres KPIs */}
+                <VanguardHeaderKpis
+                  selectedService={selectedService}
+                  services={displayedServices}
+                  onPingSelected={handlePingSingle}
+                />
 
-              {/* Cartes individuelles des projets */}
-              <div className="grid grid-cols-1 gap-4">
-                {(selectedService ? [selectedService] : displayedServices).map((service) => (
-                  <ServiceCard
-                    key={service.id}
-                    service={service}
-                    isAdminMode={isAdminMode || (currentUser && (isUserAdmin(currentUser) || service.ownerEmail === currentUser.email))}
-                    onPing={handlePingSingle}
-                    onEdit={(s) => setEditingService(s)}
-                    onDelete={handleDeleteService}
+                {/* Milieu : 2 Grandes Cartes (Courbe de Latence & Répartition Vercel/Firebase) */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <VanguardSplineChart
+                    services={displayedServices}
+                    selectedService={selectedService}
                   />
-                ))}
-              </div>
-            </div>
+                  <VanguardTechMixBar
+                    services={displayedServices}
+                  />
+                </div>
+
+                {/* Bas : 3 Colonnes (État par Catégorie, Jauge de Santé, Objectifs SLA) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <VanguardHealthPipeline
+                    services={displayedServices}
+                  />
+                  <VanguardGaugeIndex
+                    services={displayedServices}
+                  />
+                  <VanguardSlaTargets
+                    services={displayedServices}
+                  />
+                </div>
+
+                {/* Section Détaillée : Les cartes des projets avec les barres de 30 vérifications */}
+                <div className="bg-[#161224] border border-[#251f38] rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#251f38]">
+                    <div>
+                      <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
+                        {selectedService 
+                          ? `DÉTAIL DU SERVICE : ${selectedService.name.toUpperCase()}` 
+                          : "HISTORIQUE DÉTAILLÉ DE VOS PROJETS (30 DERNIERS CHECKS)"
+                        }
+                      </h3>
+                      <p className="text-xs text-[#7e7592] font-mono mt-0.5">
+                        Pastilles de statut, temps de réponse en millisecondes et date du dernier contrôle
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nouvelle URL</span>
+                    </button>
+                  </div>
+
+                  {/* Cartes individuelles des projets */}
+                  <div className="grid grid-cols-1 gap-4">
+                    {(selectedService ? [selectedService] : displayedServices).map((service) => (
+                      <ServiceCard
+                        key={service.id}
+                        service={service}
+                        isAdminMode={true}
+                        onPing={handlePingSingle}
+                        onEdit={(s) => setEditingService(s)}
+                        onDelete={handleDeleteService}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
           </div>
 
@@ -247,7 +300,7 @@ export default function App() {
         <div className="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-[#f97356] font-bold">DEVSTATUS</span>
-            <span>• Monitoring de vos Projets d'Équipe</span>
+            <span>• Espace Privé de Monitoring</span>
           </div>
 
           <div className="flex items-center gap-4 text-[#8a7f9e]">
@@ -264,13 +317,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-
-      {/* Modale d'Authentification */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onAuthSuccess={(user) => setCurrentUser(user)}
-      />
 
       {/* Modale d'Ajout d'Application */}
       <AddServiceModal

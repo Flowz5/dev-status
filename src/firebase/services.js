@@ -12,56 +12,75 @@ import {
 } from 'firebase/firestore';
 import { INITIAL_SERVICES } from '../data/initialServices';
 
-const LOCAL_STORAGE_KEY = 'devstatus_services_data';
-const LOCAL_INCIDENTS_KEY = 'devstatus_incidents_data';
+const ADMIN_EMAIL = 'le.dupont.pro@gmail.com';
 
-// Récupération initiale ou écoute temps réel des services
-export function subscribeToServices(onServicesUpdated) {
+function getStorageKey(userEmail) {
+  return `devstatus_services_data_${userEmail || 'guest'}`;
+}
+
+// Récupération initiale ou écoute temps réel des services filtrés par utilisateur
+export function subscribeToServices(userEmail, onServicesUpdated) {
+  if (!userEmail) {
+    onServicesUpdated([]);
+    return () => {};
+  }
+
+  const isAdmin = userEmail === ADMIN_EMAIL;
+
   if (db) {
     // Mode Firebase Firestore actif
     const servicesRef = collection(db, 'services');
     const unsubscribe = onSnapshot(servicesRef, async (snapshot) => {
-      if (snapshot.empty) {
-        // Initialiser avec les 4 services par défaut
-        console.log("Initialisation des services par défaut dans Firestore...");
+      const allServices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Filtrer strictement les services appartenant à l'utilisateur
+      let userServices = allServices.filter(s => s.ownerEmail === userEmail);
+
+      // Si c'est l'administrateur principal et qu'il n'a encore aucun service en base, initialiser les 4 projets par défaut
+      if (isAdmin && userServices.length === 0 && allServices.filter(s => s.ownerEmail === ADMIN_EMAIL).length === 0) {
+        console.log("Initialisation des 4 projets pour l'administrateur dans Firestore...");
         for (const s of INITIAL_SERVICES) {
-          await setDoc(doc(db, 'services', s.id), s);
+          const serviceWithOwner = { ...s, ownerEmail: ADMIN_EMAIL };
+          await setDoc(doc(db, 'services', s.id), serviceWithOwner);
         }
-      } else {
-        const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        onServicesUpdated(services);
+        return; // onSnapshot se redéclenchera avec les nouveaux documents
       }
+
+      onServicesUpdated(userServices);
     }, (error) => {
       console.error("Erreur d'écoute Firestore :", error);
-      // Fallback sur le local storage
-      fallbackToLocalStorage(onServicesUpdated);
+      // Fallback sur le local storage cloisonné
+      fallbackToLocalStorage(userEmail, onServicesUpdated);
     });
 
     return unsubscribe;
   } else {
     // Mode Stockage Local
-    return fallbackToLocalStorage(onServicesUpdated);
+    return fallbackToLocalStorage(userEmail, onServicesUpdated);
   }
 }
 
-function fallbackToLocalStorage(callback) {
+function fallbackToLocalStorage(userEmail, callback) {
+  const storageKey = getStorageKey(userEmail);
+  const isAdmin = userEmail === ADMIN_EMAIL;
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      callback(parsed);
+      callback(JSON.parse(saved));
     } else {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_SERVICES));
-      callback(INITIAL_SERVICES);
+      // Seul l'administrateur reçoit les 4 services par défaut. Tout autre compte démarre à vide.
+      const initial = isAdmin ? INITIAL_SERVICES.map(s => ({ ...s, ownerEmail: ADMIN_EMAIL })) : [];
+      localStorage.setItem(storageKey, JSON.stringify(initial));
+      callback(initial);
     }
   } catch (e) {
     console.error("Erreur de lecture locale :", e);
-    callback(INITIAL_SERVICES);
+    callback(isAdmin ? INITIAL_SERVICES : []);
   }
 
   // Écoute des changements de storage inter-onglets
   const handleStorage = (e) => {
-    if (e.key === LOCAL_STORAGE_KEY && e.newValue) {
+    if (e.key === storageKey && e.newValue) {
       try {
         callback(JSON.parse(e.newValue));
       } catch (err) {
@@ -74,10 +93,12 @@ function fallbackToLocalStorage(callback) {
 }
 
 // Ajouter un service
-export async function addService(newService) {
+export async function addService(newService, userEmail) {
+  const owner = userEmail || newService.ownerEmail || ADMIN_EMAIL;
   const serviceWithDefaults = {
     ...newService,
     id: newService.id || 'srv-' + Date.now(),
+    ownerEmail: owner,
     status: 'operational',
     statusCode: 200,
     responseTime: 0,
@@ -91,50 +112,53 @@ export async function addService(newService) {
   if (db) {
     await setDoc(doc(db, 'services', serviceWithDefaults.id), serviceWithDefaults);
   } else {
-    const current = getLocalServices();
+    const current = getLocalServices(owner);
     const updated = [...current, serviceWithDefaults];
-    saveLocalServices(updated);
+    saveLocalServices(updated, owner);
   }
   return serviceWithDefaults;
 }
 
 // Mettre à jour un service
-export async function updateService(id, updates) {
+export async function updateService(id, updates, userEmail) {
   if (db) {
     const ref = doc(db, 'services', id);
     await updateDoc(ref, updates);
   } else {
-    const current = getLocalServices();
+    const current = getLocalServices(userEmail);
     const updated = current.map(s => s.id === id ? { ...s, ...updates } : s);
-    saveLocalServices(updated);
+    saveLocalServices(updated, userEmail);
   }
 }
 
 // Supprimer un service
-export async function deleteService(id) {
+export async function deleteService(id, userEmail) {
   if (db) {
     await deleteDoc(doc(db, 'services', id));
   } else {
-    const current = getLocalServices();
+    const current = getLocalServices(userEmail);
     const updated = current.filter(s => s.id !== id);
-    saveLocalServices(updated);
+    saveLocalServices(updated, userEmail);
   }
 }
 
-// Helpers LocalStorage
-export function getLocalServices() {
+// Helpers LocalStorage partitionnés par compte
+export function getLocalServices(userEmail) {
+  const storageKey = getStorageKey(userEmail);
+  const isAdmin = userEmail === ADMIN_EMAIL;
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) return JSON.parse(saved);
+    return isAdmin ? INITIAL_SERVICES : [];
   } catch {
-    return INITIAL_SERVICES;
+    return isAdmin ? INITIAL_SERVICES : [];
   }
 }
 
-export function saveLocalServices(services) {
+export function saveLocalServices(services, userEmail) {
+  const storageKey = getStorageKey(userEmail);
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(services));
-    // Déclencher un custom event pour mise à jour immédiate sur la page courante
+    localStorage.setItem(storageKey, JSON.stringify(services));
     window.dispatchEvent(new Event('devstatus_local_update'));
   } catch (e) {
     console.error("Erreur de sauvegarde locale :", e);

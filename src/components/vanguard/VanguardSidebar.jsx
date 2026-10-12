@@ -1,14 +1,12 @@
 import React from 'react';
-import { ArrowUpRight, User, Users } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export function VanguardSidebar({
   services,
   selectedServiceId,
   onSelectService,
   lastGlobalCheck,
-  currentUser,
-  filterOnlyMine,
-  setFilterOnlyMine
+  currentUser
 }) {
   const activeServices = services.filter(s => s.active !== false);
   const total = activeServices.length;
@@ -32,39 +30,15 @@ export function VanguardSidebar({
         <div>
           {/* Header de la sidebar en Français */}
           <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[#7e7592] pb-3 border-b border-[#251f38]">
-            <span className="font-bold text-[#b4a9cc]">VOS PROJETS D'ÉQUIPE</span>
+            <span className="font-bold text-[#b4a9cc]">VOS PROJETS ({total})</span>
             <div className="flex items-center gap-6">
               <span>LATENCE</span>
               <span>ÉTAT</span>
             </div>
           </div>
 
-          {/* Filtre "Mes Projets" si connecté */}
-          {currentUser && (
-            <div className="flex items-center bg-[#100d1c] p-1 rounded-xl border border-[#231d34] my-2 text-[11px] font-mono">
-              <button
-                onClick={() => setFilterOnlyMine(false)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg transition ${
-                  !filterOnlyMine ? 'bg-[#f97356] text-white font-bold' : 'text-[#8f85a8] hover:text-white'
-                }`}
-              >
-                <Users className="w-3 h-3" />
-                <span>Tous ({total})</span>
-              </button>
-              <button
-                onClick={() => setFilterOnlyMine(true)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded-lg transition ${
-                  filterOnlyMine ? 'bg-[#f97356] text-white font-bold' : 'text-[#8f85a8] hover:text-white'
-                }`}
-              >
-                <User className="w-3 h-3" />
-                <span>Mes Sites</span>
-              </button>
-            </div>
-          )}
-
           {/* Arborescence (Tree) */}
-          <div className="mt-2 space-y-1">
+          <div className="mt-3 space-y-1">
             
             {/* Nœud Racine (Vue Globale) */}
             <div

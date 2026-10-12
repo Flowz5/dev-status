@@ -18,10 +18,10 @@ service cloud.firestore {
       );
     }
 
-    // Collection des services surveillés
+    // Collection des services surveillés (cloisonnée par compte)
     match /services/{serviceId} {
-      // Lecture publique pour la Status Page
-      allow read: if true;
+      // Lecture strictement réservée à l'administrateur ou au propriétaire
+      allow read: if isAdmin() || isOwner(resource.data);
 
       // Création : l'utilisateur authentifié devient le propriétaire (ou l'administrateur)
       allow create: if isAdmin() || (

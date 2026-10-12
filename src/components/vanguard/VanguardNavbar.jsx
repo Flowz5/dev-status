@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Plus, Settings, Globe, Sliders, LogIn, LogOut, UserCheck } from 'lucide-react';
+import { RefreshCw, Plus, Settings, LogOut } from 'lucide-react';
 import { isUserAdmin } from '../../firebase/auth';
 
 export function VanguardNavbar({
@@ -8,11 +8,7 @@ export function VanguardNavbar({
   onRefreshAll,
   onOpenAddModal,
   onOpenSettingsModal,
-  isAdminMode,
-  setIsAdminMode,
-  lastGlobalCheck,
   currentUser,
-  onOpenAuthModal,
   onLogout
 }) {
   const activeCount = services.filter(s => s.active !== false).length;
@@ -56,58 +52,36 @@ export function VanguardNavbar({
           </div>
 
           {/* Bouton Tester tout */}
-          <button
-            onClick={onRefreshAll}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1f1a30] hover:bg-[#2a2340] text-xs font-mono text-[#e5e1f0] border border-[#2e2646] transition disabled:opacity-50"
-            title="Relancer un test sur tous les projets"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#f97356] ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline font-semibold">
-              {isRefreshing ? 'Test en cours...' : 'Tester tout'}
-            </span>
-          </button>
-
-          {/* Bascule Mode Vue Publique / Gestion */}
-          <div className="flex items-center bg-[#171324] p-0.5 rounded-lg border border-[#2a223d]">
+          {activeCount > 0 && (
             <button
-              onClick={() => setIsAdminMode(false)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition ${
-                !isAdminMode ? 'bg-[#f97356] text-white font-bold shadow-sm' : 'text-[#8c829e] hover:text-white'
-              }`}
+              onClick={onRefreshAll}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1f1a30] hover:bg-[#2a2340] text-xs font-mono text-[#e5e1f0] border border-[#2e2646] transition disabled:opacity-50"
+              title="Relancer un test sur tous les projets"
             >
-              <Globe className="w-3 h-3" />
-              <span className="hidden sm:inline">Public</span>
-            </button>
-            <button
-              onClick={() => setIsAdminMode(true)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition ${
-                isAdminMode ? 'bg-[#f97356] text-white font-bold shadow-sm' : 'text-[#8c829e] hover:text-white'
-              }`}
-            >
-              <Sliders className="w-3 h-3" />
-              <span className="hidden sm:inline">Gestion</span>
-            </button>
-          </div>
-
-          {/* Bouton Ajouter URL (si connecté ou admin) */}
-          {(isAdminMode || currentUser) && (
-            <button
-              onClick={onOpenAddModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Ajouter URL</span>
+              <RefreshCw className={`w-3.5 h-3.5 text-[#f97356] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline font-semibold">
+                {isRefreshing ? 'Test en cours...' : 'Tester tout'}
+              </span>
             </button>
           )}
 
-          {/* Authentification Utilisateur */}
-          {currentUser ? (
-            <div className="flex items-center gap-2 bg-[#1b162b] border border-[#2e2646] px-2.5 py-1 rounded-xl text-xs font-mono">
-              <div className="w-5 h-5 rounded-full bg-[#f97356] flex items-center justify-center text-[10px] font-bold text-white">
+          {/* Bouton Ajouter URL */}
+          <button
+            onClick={onOpenAddModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f97356] hover:bg-[#ff8469] text-white text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Ajouter URL</span>
+          </button>
+
+          {/* Badge Utilisateur Connecté & Déconnexion */}
+          {currentUser && (
+            <div className="flex items-center gap-2 bg-[#1b162b] border border-[#2e2646] px-2.5 py-1.5 rounded-xl text-xs font-mono">
+              <div className="w-5 h-5 rounded-full bg-[#f97356] flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
                 {currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'U'}
               </div>
-              <span className="text-white max-w-[130px] truncate hidden md:inline">
+              <span className="text-white max-w-[140px] truncate hidden md:inline">
                 {currentUser.email}
               </span>
               {isAdmin && (
@@ -117,26 +91,18 @@ export function VanguardNavbar({
               )}
               <button
                 onClick={onLogout}
-                className="p-1 rounded text-[#8f85a8] hover:text-[#ef4444] transition ml-1"
+                className="p-1 rounded text-[#8f85a8] hover:text-[#ef4444] hover:bg-[#281b29] transition ml-1 cursor-pointer"
                 title="Se déconnecter"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={onOpenAuthModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2b1b22] hover:bg-[#382029] text-[#f97356] border border-[#592631] text-xs font-mono font-bold transition"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Connexion</span>
-            </button>
           )}
 
           {/* Bouton Paramètres */}
           <button
             onClick={onOpenSettingsModal}
-            className="p-1.5 rounded-lg bg-[#1c182c] hover:bg-[#25203a] text-[#8c829e] hover:text-white border border-[#2a223d] transition"
+            className="p-1.5 rounded-lg bg-[#1c182c] hover:bg-[#25203a] text-[#8c829e] hover:text-white border border-[#2a223d] transition cursor-pointer"
             title="Paramètres Firestore & Données"
           >
             <Settings className="w-4 h-4" />
