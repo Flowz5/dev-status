@@ -37,9 +37,9 @@ export function VanguardHeaderKpis({
             </h2>
             {selectedService && (
               <a 
-                href={selectedService.url} 
+                href={selectedService.url && /^https?:\/\//i.test(selectedService.url.trim()) ? selectedService.url.trim() : '#'} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 className="text-[#f97356] hover:text-[#ff8a70] transition flex items-center gap-1 text-xs font-mono"
                 title="Ouvrir le site en direct"
               >

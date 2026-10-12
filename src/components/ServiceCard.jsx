@@ -93,9 +93,9 @@ export function ServiceCard({
 
             <div className="flex items-center gap-2 mt-1">
               <a
-                href={service.url}
+                href={service.url && /^https?:\/\//i.test(service.url.trim()) ? service.url.trim() : '#'}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="text-[11px] sm:text-xs text-[#8f85a8] hover:text-[#f97356] transition flex items-center gap-1 truncate max-w-[240px] sm:max-w-md font-mono"
               >
                 <span className="truncate">{service.url}</span>
